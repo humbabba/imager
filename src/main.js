@@ -1,5 +1,4 @@
 const fileInput = document.getElementById('image-upload');
-const foo = 'bar';
 const processBtn = document.getElementById('process-btn');
 const downloadBtn = document.getElementById('download-btn');
 const maxWidthInput = document.getElementById('max-width');
@@ -13,7 +12,7 @@ const overlayShadowInput = document.getElementById('overlay-shadow');
 const qualityContainer = document.getElementById('quality-container');
 const jpgQualityInput = document.getElementById('jpg-quality');
 const forceJpgCheckbox = document.getElementById('force-jpg');
-console.log('Foo: ', foo);
+
 // Toggle quality visibility based on force JPG checkbox
 function updateQualityVisibility() {
     const isJpg = sourceMimeType === 'image/jpeg';
