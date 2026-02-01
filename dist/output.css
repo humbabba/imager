@@ -226,9 +226,6 @@
       max-width: 96rem;
     }
   }
-  .mx-auto {
-    margin-inline: auto;
-  }
   .mt-3 {
     margin-top: calc(var(--spacing) * 3);
   }
@@ -289,8 +286,8 @@
   .max-w-xl {
     max-width: var(--container-xl);
   }
-  .transform {
-    transform: var(--tw-rotate-x,) var(--tw-rotate-y,) var(--tw-rotate-z,) var(--tw-skew-x,) var(--tw-skew-y,);
+  .flex-1 {
+    flex: 1;
   }
   .cursor-pointer {
     cursor: pointer;
@@ -354,9 +351,6 @@
   .p-6 {
     padding: calc(var(--spacing) * 6);
   }
-  .p-8 {
-    padding: calc(var(--spacing) * 8);
-  }
   .px-2 {
     padding-inline: calc(var(--spacing) * 2);
   }
@@ -405,6 +399,9 @@
   .tracking-widest {
     --tw-tracking: var(--tracking-widest);
     letter-spacing: var(--tracking-widest);
+  }
+  .whitespace-nowrap {
+    white-space: nowrap;
   }
   .text-brass {
     color: var(--color-brass);
@@ -464,79 +461,14 @@
       right: calc(50% + 19.5rem);
     }
   }
-  .xl\:right-\[calc\(50\%\+20rem\)\] {
-    @media (width >= 80rem) {
-      right: calc(50% + 20rem);
-    }
-  }
   .xl\:left-\[calc\(50\%\+19\.5rem\)\] {
     @media (width >= 80rem) {
       left: calc(50% + 19.5rem);
     }
   }
-  .xl\:order-1 {
-    @media (width >= 80rem) {
-      order: 1;
-    }
-  }
-  .xl\:order-2 {
-    @media (width >= 80rem) {
-      order: 2;
-    }
-  }
-  .xl\:order-3 {
-    @media (width >= 80rem) {
-      order: 3;
-    }
-  }
-  .xl\:order-none {
-    @media (width >= 80rem) {
-      order: 0;
-    }
-  }
-  .xl\:grid {
-    @media (width >= 80rem) {
-      display: grid;
-    }
-  }
   .xl\:w-80 {
     @media (width >= 80rem) {
       width: calc(var(--spacing) * 80);
-    }
-  }
-  .xl\:flex-shrink-0 {
-    @media (width >= 80rem) {
-      flex-shrink: 0;
-    }
-  }
-  .xl\:grid-cols-\[1fr_auto_1fr\] {
-    @media (width >= 80rem) {
-      grid-template-columns: 1fr auto 1fr;
-    }
-  }
-  .xl\:flex-row {
-    @media (width >= 80rem) {
-      flex-direction: row;
-    }
-  }
-  .xl\:items-start {
-    @media (width >= 80rem) {
-      align-items: flex-start;
-    }
-  }
-  .xl\:justify-center {
-    @media (width >= 80rem) {
-      justify-content: center;
-    }
-  }
-  .xl\:justify-self-end {
-    @media (width >= 80rem) {
-      justify-self: flex-end;
-    }
-  }
-  .xl\:justify-self-start {
-    @media (width >= 80rem) {
-      justify-self: flex-start;
     }
   }
 }
@@ -633,26 +565,6 @@
   .muted-text {
     color: var(--color-iron-light);
   }
-}
-@property --tw-rotate-x {
-  syntax: "*";
-  inherits: false;
-}
-@property --tw-rotate-y {
-  syntax: "*";
-  inherits: false;
-}
-@property --tw-rotate-z {
-  syntax: "*";
-  inherits: false;
-}
-@property --tw-skew-x {
-  syntax: "*";
-  inherits: false;
-}
-@property --tw-skew-y {
-  syntax: "*";
-  inherits: false;
 }
 @property --tw-space-y-reverse {
   syntax: "*";
@@ -793,11 +705,6 @@
 @layer properties {
   @supports ((-webkit-hyphens: none) and (not (margin-trim: inline))) or ((-moz-orient: inline) and (not (color:rgb(from red r g b)))) {
     *, ::before, ::after, ::backdrop {
-      --tw-rotate-x: initial;
-      --tw-rotate-y: initial;
-      --tw-rotate-z: initial;
-      --tw-skew-x: initial;
-      --tw-skew-y: initial;
       --tw-space-y-reverse: 0;
       --tw-border-style: solid;
       --tw-font-weight: initial;

@@ -1,6 +1,8 @@
 const fileInput = document.getElementById('image-upload');
 const processBtn = document.getElementById('process-btn');
 const downloadBtn = document.getElementById('download-btn');
+const outputNameInput = document.getElementById('output-name');
+const keepNameCheckbox = document.getElementById('keep-name');
 const maxWidthInput = document.getElementById('max-width');
 const maxHeightInput = document.getElementById('max-height');
 const aspectRatioSelect = document.getElementById('aspect-ratio');
@@ -182,6 +184,11 @@ fileInput.addEventListener('change', (e) => {
         nameParts.pop(); // Remove extension
         sourceFileName = nameParts.join('.');
         sourceMimeType = file.type || 'image/png';
+
+        // Populate output name if blank
+        if (!outputNameInput.value.trim()) {
+            outputNameInput.value = sourceFileName;
+        }
 
         const img = new Image();
         const objectUrl = URL.createObjectURL(file);
@@ -369,13 +376,19 @@ processBtn.addEventListener('click', () => {
     // Update output info
     const extension = getExtensionFromMime(outputMimeType);
     const timestamp = getTimestamp();
-    const generatedFilename = `${sourceFileName} - se_imager_${timestamp}.${extension}`;
+    const baseName = outputNameInput.value.trim() || sourceFileName;
+    const generatedFilename = `${baseName} - ${timestamp}.${extension}`;
     outputFilename.textContent = generatedFilename;
     outputDimensions.textContent = `${targetWidth} × ${targetHeight} px`;
 
     // Store for download
     canvas.dataset.filename = generatedFilename;
     canvas.dataset.dataUrl = dataUrl;
+
+    // Clear output name if not keeping
+    if (!keepNameCheckbox.checked) {
+        outputNameInput.value = '';
+    }
 
     outputContainer.classList.remove('hidden');
 });
