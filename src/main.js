@@ -357,13 +357,6 @@ processBtn.addEventListener('click', () => {
         );
     }
 
-    // Update output info
-    const extension = getExtensionFromMime(outputMimeType);
-    const timestamp = getTimestamp();
-    const generatedFilename = `${sourceFileName} - se_imager_${timestamp}.${extension}`;
-    outputFilename.textContent = generatedFilename;
-    outputDimensions.textContent = `${targetWidth} × ${targetHeight} px`;
-
     // Determine output format and quality
     const forceJpg = forceJpgCheckbox.checked;
     const outputMimeType = forceJpg ? 'image/jpeg' : sourceMimeType;
@@ -373,11 +366,17 @@ processBtn.addEventListener('click', () => {
     const outputBytes = Math.round((dataUrl.length - `data:${sourceMimeType};base64,`.length) * 0.75);
     outputFilesizeEl.textContent = formatFilesize(outputBytes);
 
+    // Update output info
+    const extension = getExtensionFromMime(outputMimeType);
+    const timestamp = getTimestamp();
+    const generatedFilename = `${sourceFileName} - se_imager_${timestamp}.${extension}`;
+    outputFilename.textContent = generatedFilename;
+    outputDimensions.textContent = `${targetWidth} × ${targetHeight} px`;
+
     // Store for download
     canvas.dataset.filename = generatedFilename;
     canvas.dataset.dataUrl = dataUrl;
 
-    sourceContainer.classList.add('hidden');
     outputContainer.classList.remove('hidden');
 });
 

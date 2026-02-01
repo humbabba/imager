@@ -282,11 +282,6 @@
         targetHeight
       );
     }
-    const extension = getExtensionFromMime(outputMimeType);
-    const timestamp = getTimestamp();
-    const generatedFilename = `${sourceFileName} - se_imager_${timestamp}.${extension}`;
-    outputFilename.textContent = generatedFilename;
-    outputDimensions.textContent = `${targetWidth} \xD7 ${targetHeight} px`;
     const forceJpg = forceJpgCheckbox.checked;
     const outputMimeType = forceJpg ? "image/jpeg" : sourceMimeType;
     const isOutputJpg = outputMimeType === "image/jpeg";
@@ -294,9 +289,13 @@
     const dataUrl = canvas.toDataURL(outputMimeType, quality);
     const outputBytes = Math.round((dataUrl.length - `data:${sourceMimeType};base64,`.length) * 0.75);
     outputFilesizeEl.textContent = formatFilesize(outputBytes);
+    const extension = getExtensionFromMime(outputMimeType);
+    const timestamp = getTimestamp();
+    const generatedFilename = `${sourceFileName} - se_imager_${timestamp}.${extension}`;
+    outputFilename.textContent = generatedFilename;
+    outputDimensions.textContent = `${targetWidth} \xD7 ${targetHeight} px`;
     canvas.dataset.filename = generatedFilename;
     canvas.dataset.dataUrl = dataUrl;
-    sourceContainer.classList.add("hidden");
     outputContainer.classList.remove("hidden");
   });
   downloadBtn.addEventListener("click", () => {

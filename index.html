@@ -15,7 +15,7 @@
     </style>
 </head>
 <body class="min-h-screen">
-    <div class="max-w-xl mx-auto p-8">
+    <div class="p-4 lg:p-8">
         <!-- Header -->
         <div class="text-center mb-8">
             <h1 class="text-3xl font-bold mb-2 text-brass-light tracking-wider">Sublogical Endeavors</h1>
@@ -29,8 +29,29 @@
             <p class="text-steam text-sm">Images wrangled here</p>
         </div>
 
-        <!-- Main Control Panel -->
-        <div class="panel p-6">
+        <!-- Three-column layout -->
+        <div class="flex flex-col items-center xl:relative gap-6">
+            <!-- Source Preview (left on wide, below output on narrow) -->
+            <div id="source-container" class="hidden order-3 w-full xl:absolute xl:top-0 xl:right-[calc(50%+19.5rem)] xl:w-80">
+                <div class="panel p-6">
+                    <div class="absolute top-2 left-2 rivet"></div>
+                    <div class="absolute top-2 right-2 rivet"></div>
+                    <div class="absolute bottom-2 left-2 rivet"></div>
+                    <div class="absolute bottom-2 right-2 rivet"></div>
+
+                    <h2 class="label-text text-lg mb-4">Source</h2>
+                    <img id="source-preview" class="max-w-full border-2 border-iron-light rounded">
+                    <div class="mt-4 text-sm body-text space-y-1">
+                        <p><span class="text-brass">Filename:</span> <span id="source-filename"></span></p>
+                        <p><span class="text-brass">Dimensions:</span> <span id="source-dimensions"></span></p>
+                        <p><span class="text-brass">Filesize:</span> <span id="source-filesize"></span></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Control Panel (center) -->
+            <div class="order-1 w-full max-w-xl">
+                <div class="panel p-6">
             <!-- Corner Rivets -->
             <div class="absolute top-2 left-2 rivet"></div>
             <div class="absolute top-2 right-2 rivet"></div>
@@ -138,49 +159,33 @@
                 </div>
             </div>
 
-            <div class="pt-2">
-                <button id="process-btn" class="btn-primary w-full px-6 py-3 rounded cursor-pointer" disabled>
-                    ⚙ Process Image
-                </button>
-            </div>
-        </div>
-
-        <!-- Source Preview -->
-        <div id="source-container" class="mt-8 hidden">
-            <div class="panel p-6">
-                <div class="absolute top-2 left-2 rivet"></div>
-                <div class="absolute top-2 right-2 rivet"></div>
-                <div class="absolute bottom-2 left-2 rivet"></div>
-                <div class="absolute bottom-2 right-2 rivet"></div>
-
-                <h2 class="label-text text-lg mb-4">Source</h2>
-                <img id="source-preview" class="max-w-full border-2 border-iron-light rounded">
-                <div class="mt-4 text-sm body-text space-y-1">
-                    <p><span class="text-brass">Filename:</span> <span id="source-filename"></span></p>
-                    <p><span class="text-brass">Dimensions:</span> <span id="source-dimensions"></span></p>
-                    <p><span class="text-brass">Filesize:</span> <span id="source-filesize"></span></p>
+                <div class="pt-2">
+                    <button id="process-btn" class="btn-primary w-full px-6 py-3 rounded cursor-pointer" disabled>
+                        ⚙ Process Image
+                    </button>
+                </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Output Preview -->
-        <div id="output-container" class="mt-8 hidden">
-            <div class="panel p-6">
-                <div class="absolute top-2 left-2 rivet"></div>
-                <div class="absolute top-2 right-2 rivet"></div>
-                <div class="absolute bottom-2 left-2 rivet"></div>
-                <div class="absolute bottom-2 right-2 rivet"></div>
+            <!-- Output Preview (right on wide, above source on narrow) -->
+            <div id="output-container" class="hidden order-2 w-full xl:absolute xl:top-0 xl:left-[calc(50%+19.5rem)] xl:w-80">
+                <div class="panel p-6">
+                    <div class="absolute top-2 left-2 rivet"></div>
+                    <div class="absolute top-2 right-2 rivet"></div>
+                    <div class="absolute bottom-2 left-2 rivet"></div>
+                    <div class="absolute bottom-2 right-2 rivet"></div>
 
-                <h2 class="label-text text-lg mb-4">Output</h2>
-                <canvas id="output-canvas" class="max-w-full border-2 border-iron-light rounded"></canvas>
-                <div class="mt-4 text-sm body-text space-y-1">
-                    <p><span class="text-brass">Filename:</span> <span id="output-filename"></span></p>
-                    <p><span class="text-brass">Dimensions:</span> <span id="output-dimensions"></span></p>
-                    <p><span class="text-brass">Filesize:</span> <span id="output-filesize"></span></p>
+                    <h2 class="label-text text-lg mb-4">Output</h2>
+                    <canvas id="output-canvas" class="max-w-full border-2 border-iron-light rounded"></canvas>
+                    <div class="mt-4 text-sm body-text space-y-1">
+                        <p><span class="text-brass">Filename:</span> <span id="output-filename"></span></p>
+                        <p><span class="text-brass">Dimensions:</span> <span id="output-dimensions"></span></p>
+                        <p><span class="text-brass">Filesize:</span> <span id="output-filesize"></span></p>
+                    </div>
+                    <button id="download-btn" class="btn-primary mt-4 w-full px-6 py-3 rounded cursor-pointer">
+                        ⚙ Download Image
+                    </button>
                 </div>
-                <button id="download-btn" class="btn-primary mt-4 w-full px-6 py-3 rounded cursor-pointer">
-                    ⚙ Download Image
-                </button>
             </div>
         </div>
 
