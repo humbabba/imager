@@ -401,11 +401,468 @@ processBtn.addEventListener('click', () => {
     }
 
     outputContainer.classList.remove('hidden');
+
+    // Show text overlay tab
+    showTextOverlayTab();
 });
 
 downloadBtn.addEventListener('click', () => {
     const link = document.createElement('a');
     link.download = canvas.dataset.filename;
     link.href = canvas.dataset.dataUrl;
+    link.click();
+});
+
+// ============================================================
+// Text Overlay Feature
+// ============================================================
+
+// DOM Elements
+const tabBar = document.getElementById('tab-bar');
+const tabBarText = document.getElementById('tab-bar-text');
+const processView = document.getElementById('process-view');
+const textOverlayView = document.getElementById('text-overlay-view');
+const textCanvas = document.getElementById('text-canvas');
+const textCanvasHint = document.getElementById('text-canvas-hint');
+const textCtx = textCanvas.getContext('2d');
+const textItemsList = document.getElementById('text-items-list');
+const addTextBtn = document.getElementById('add-text-btn');
+const textDownloadBtn = document.getElementById('text-download-btn');
+
+// Style controls
+const noSelectionMsg = document.getElementById('no-selection-msg');
+const styleControlsInner = document.getElementById('style-controls-inner');
+const textContentInput = document.getElementById('text-content');
+const textFontSelect = document.getElementById('text-font');
+const textSizeInput = document.getElementById('text-size');
+const textColorInput = document.getElementById('text-color');
+const textOpacityInput = document.getElementById('text-opacity');
+const textOpacityValue = document.getElementById('text-opacity-value');
+const toggleBoldBtn = document.getElementById('toggle-bold');
+const toggleItalicBtn = document.getElementById('toggle-italic');
+const toggleUnderlineBtn = document.getElementById('toggle-underline');
+const toggleUppercaseBtn = document.getElementById('toggle-uppercase');
+const textOutlineCheckbox = document.getElementById('text-outline');
+const textOutlineColorInput = document.getElementById('text-outline-color');
+const deleteTextBtn = document.getElementById('delete-text-btn');
+
+// Data model
+let textItems = [];
+let selectedTextId = null;
+let baseImageData = null; // Stores the processed image data
+let lastTextStyle = {
+    fontFamily: 'Arial',
+    fontSize: 48,
+    color: '#ffffff',
+    opacity: 100,
+    bold: false,
+    italic: false,
+    underline: false,
+    uppercase: false,
+    outline: false,
+    outlineColor: '#000000'
+};
+
+// Generate unique ID
+function generateId() {
+    return Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
+}
+
+// Default text item
+function createDefaultTextItem(x, y) {
+    return {
+        id: generateId(),
+        text: 'Text',
+        x: x,
+        y: y,
+        fontFamily: lastTextStyle.fontFamily,
+        fontSize: lastTextStyle.fontSize,
+        color: lastTextStyle.color,
+        opacity: lastTextStyle.opacity,
+        bold: lastTextStyle.bold,
+        italic: lastTextStyle.italic,
+        underline: lastTextStyle.underline,
+        uppercase: lastTextStyle.uppercase,
+        outline: lastTextStyle.outline,
+        outlineColor: lastTextStyle.outlineColor
+    };
+}
+
+// Tab switching
+function switchToTab(tabName) {
+    // Update all tab buttons
+    document.querySelectorAll('.tab-process-btn').forEach(btn => {
+        btn.classList.toggle('active', tabName === 'process');
+    });
+    document.querySelectorAll('.tab-text-btn').forEach(btn => {
+        btn.classList.toggle('active', tabName === 'text');
+    });
+
+    if (tabName === 'process') {
+        processView.classList.remove('hidden');
+        textOverlayView.classList.add('hidden');
+    } else if (tabName === 'text') {
+        processView.classList.add('hidden');
+        textOverlayView.classList.remove('hidden');
+        renderTextOverlay();
+    }
+}
+
+// Event listeners for all tab buttons
+document.querySelectorAll('.tab-process-btn').forEach(btn => {
+    btn.addEventListener('click', () => switchToTab('process'));
+});
+document.querySelectorAll('.tab-text-btn').forEach(btn => {
+    btn.addEventListener('click', () => switchToTab('text'));
+});
+
+// Show text overlay tab after processing
+function showTextOverlayTab() {
+    tabBar.classList.remove('hidden');
+    // Store the base image data
+    baseImageData = {
+        width: canvas.width,
+        height: canvas.height,
+        dataUrl: canvas.toDataURL()
+    };
+}
+
+// Get canvas click position as percentage
+function getCanvasClickPosition(event, canvasEl) {
+    const rect = canvasEl.getBoundingClientRect();
+    const scaleX = canvasEl.width / rect.width;
+    const scaleY = canvasEl.height / rect.height;
+    const x = ((event.clientX - rect.left) * scaleX / canvasEl.width) * 100;
+    const y = ((event.clientY - rect.top) * scaleY / canvasEl.height) * 100;
+    return { x, y };
+}
+
+// Add text item
+function addTextItem(x, y) {
+    const item = createDefaultTextItem(x, y);
+    textItems.push(item);
+    selectTextItem(item.id);
+    renderTextItemsList();
+    renderTextOverlay();
+    updateHintVisibility();
+}
+
+// Update text item
+function updateTextItem(id, updates) {
+    const item = textItems.find(i => i.id === id);
+    if (item) {
+        Object.assign(item, updates);
+        // Save style settings (excluding position and text content)
+        const styleKeys = ['fontFamily', 'fontSize', 'color', 'opacity', 'bold', 'italic', 'underline', 'uppercase', 'outline', 'outlineColor'];
+        styleKeys.forEach(key => {
+            if (key in item) {
+                lastTextStyle[key] = item[key];
+            }
+        });
+        renderTextOverlay();
+        renderTextItemsList();
+    }
+}
+
+// Delete text item
+function deleteTextItem(id) {
+    const index = textItems.findIndex(i => i.id === id);
+    if (index !== -1) {
+        textItems.splice(index, 1);
+        if (selectedTextId === id) {
+            selectedTextId = null;
+            updateStyleControls();
+        }
+        renderTextItemsList();
+        renderTextOverlay();
+        updateHintVisibility();
+    }
+}
+
+// Select text item
+function selectTextItem(id) {
+    selectedTextId = id;
+    // Save style from selected item
+    const item = textItems.find(i => i.id === id);
+    if (item) {
+        const styleKeys = ['fontFamily', 'fontSize', 'color', 'opacity', 'bold', 'italic', 'underline', 'uppercase', 'outline', 'outlineColor'];
+        styleKeys.forEach(key => {
+            if (key in item) {
+                lastTextStyle[key] = item[key];
+            }
+        });
+    }
+    updateStyleControls();
+    renderTextItemsList();
+}
+
+// Update hint visibility
+function updateHintVisibility() {
+    if (textItems.length === 0) {
+        textCanvasHint.classList.remove('hidden');
+    } else {
+        textCanvasHint.classList.add('hidden');
+    }
+}
+
+// Update style controls based on selected item
+function updateStyleControls() {
+    const item = textItems.find(i => i.id === selectedTextId);
+    if (item) {
+        noSelectionMsg.classList.add('hidden');
+        styleControlsInner.classList.remove('hidden');
+
+        textContentInput.value = item.text;
+        textFontSelect.value = item.fontFamily;
+        textSizeInput.value = item.fontSize;
+        textColorInput.value = item.color;
+        textOpacityInput.value = item.opacity;
+        textOpacityValue.textContent = item.opacity + '%';
+        toggleBoldBtn.classList.toggle('active', item.bold);
+        toggleItalicBtn.classList.toggle('active', item.italic);
+        toggleUnderlineBtn.classList.toggle('active', item.underline);
+        toggleUppercaseBtn.classList.toggle('active', item.uppercase);
+        textOutlineCheckbox.checked = item.outline;
+        textOutlineColorInput.value = item.outlineColor;
+    } else {
+        noSelectionMsg.classList.remove('hidden');
+        styleControlsInner.classList.add('hidden');
+    }
+}
+
+// Render text items list
+function renderTextItemsList() {
+    textItemsList.innerHTML = '';
+    textItems.forEach(item => {
+        const chip = document.createElement('div');
+        chip.className = 'text-item-chip rounded flex items-center justify-between';
+        if (item.id === selectedTextId) {
+            chip.classList.add('selected');
+        }
+        const displayText = item.text.length > 15 ? item.text.substring(0, 15) + '...' : item.text;
+        chip.innerHTML = `
+            <span class="truncate">${displayText || '(empty)'}</span>
+            <button class="text-item-delete" title="Delete">&times;</button>
+        `;
+        chip.addEventListener('click', (e) => {
+            if (!e.target.classList.contains('text-item-delete')) {
+                selectTextItem(item.id);
+            }
+        });
+        chip.querySelector('.text-item-delete').addEventListener('click', (e) => {
+            e.stopPropagation();
+            deleteTextItem(item.id);
+        });
+        textItemsList.appendChild(chip);
+    });
+}
+
+// Draw a single text item
+function drawTextItem(ctx, item, canvasWidth, canvasHeight) {
+    if (!item.text) return;
+
+    const x = (item.x / 100) * canvasWidth;
+    const y = (item.y / 100) * canvasHeight;
+
+    // Build font string
+    let fontStyle = '';
+    if (item.italic) fontStyle += 'italic ';
+    if (item.bold) fontStyle += 'bold ';
+    fontStyle += item.fontSize + 'px ';
+    fontStyle += '"' + item.fontFamily + '"';
+
+    ctx.font = fontStyle;
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'top';
+
+    // Set opacity
+    ctx.globalAlpha = item.opacity / 100;
+
+    // Apply uppercase transform if enabled
+    const displayText = item.uppercase ? item.text.toUpperCase() : item.text;
+
+    // Draw outline if enabled
+    if (item.outline) {
+        ctx.strokeStyle = item.outlineColor;
+        ctx.lineWidth = Math.max(2, item.fontSize / 12);
+        ctx.lineJoin = 'round';
+        ctx.strokeText(displayText, x, y);
+    }
+
+    // Draw fill
+    ctx.fillStyle = item.color;
+    ctx.fillText(displayText, x, y);
+
+    // Draw underline if enabled
+    if (item.underline) {
+        const metrics = ctx.measureText(displayText);
+        const underlineY = y + item.fontSize * 0.95;
+        const underlineWidth = metrics.width;
+        ctx.beginPath();
+        ctx.moveTo(x, underlineY);
+        ctx.lineTo(x + underlineWidth, underlineY);
+        ctx.strokeStyle = item.color;
+        ctx.lineWidth = Math.max(1, item.fontSize / 20);
+        ctx.stroke();
+    }
+
+    // Reset alpha
+    ctx.globalAlpha = 1;
+}
+
+// Render the text overlay canvas
+function renderTextOverlay() {
+    if (!baseImageData) return;
+
+    // Set canvas dimensions
+    textCanvas.width = baseImageData.width;
+    textCanvas.height = baseImageData.height;
+
+    // Draw base image
+    const img = new Image();
+    img.onload = () => {
+        textCtx.drawImage(img, 0, 0);
+
+        // Draw all text items
+        textItems.forEach(item => {
+            drawTextItem(textCtx, item, textCanvas.width, textCanvas.height);
+        });
+    };
+    img.src = baseImageData.dataUrl;
+}
+
+// Canvas click handler
+textCanvas.addEventListener('click', (e) => {
+    const pos = getCanvasClickPosition(e, textCanvas);
+    if (selectedTextId) {
+        // Move selected item to click position
+        updateTextItem(selectedTextId, { x: pos.x, y: pos.y });
+    } else {
+        // No selection - add new item
+        addTextItem(pos.x, pos.y);
+    }
+});
+
+// Add text button handler
+addTextBtn.addEventListener('click', () => {
+    // Add text at center
+    addTextItem(50, 50);
+});
+
+// Style control event handlers
+textContentInput.addEventListener('input', () => {
+    if (selectedTextId) {
+        updateTextItem(selectedTextId, { text: textContentInput.value });
+    }
+});
+
+textFontSelect.addEventListener('change', () => {
+    if (selectedTextId) {
+        updateTextItem(selectedTextId, { fontFamily: textFontSelect.value });
+    }
+});
+
+textSizeInput.addEventListener('input', () => {
+    if (selectedTextId) {
+        updateTextItem(selectedTextId, { fontSize: parseInt(textSizeInput.value) || 48 });
+    }
+});
+
+textColorInput.addEventListener('input', () => {
+    if (selectedTextId) {
+        updateTextItem(selectedTextId, { color: textColorInput.value });
+    }
+});
+
+textOpacityInput.addEventListener('input', () => {
+    if (selectedTextId) {
+        const val = parseInt(textOpacityInput.value);
+        textOpacityValue.textContent = val + '%';
+        updateTextItem(selectedTextId, { opacity: val });
+    }
+});
+
+toggleBoldBtn.addEventListener('click', () => {
+    if (selectedTextId) {
+        const item = textItems.find(i => i.id === selectedTextId);
+        if (item) {
+            updateTextItem(selectedTextId, { bold: !item.bold });
+            toggleBoldBtn.classList.toggle('active');
+        }
+    }
+});
+
+toggleItalicBtn.addEventListener('click', () => {
+    if (selectedTextId) {
+        const item = textItems.find(i => i.id === selectedTextId);
+        if (item) {
+            updateTextItem(selectedTextId, { italic: !item.italic });
+            toggleItalicBtn.classList.toggle('active');
+        }
+    }
+});
+
+toggleUnderlineBtn.addEventListener('click', () => {
+    if (selectedTextId) {
+        const item = textItems.find(i => i.id === selectedTextId);
+        if (item) {
+            updateTextItem(selectedTextId, { underline: !item.underline });
+            toggleUnderlineBtn.classList.toggle('active');
+        }
+    }
+});
+
+toggleUppercaseBtn.addEventListener('click', () => {
+    if (selectedTextId) {
+        const item = textItems.find(i => i.id === selectedTextId);
+        if (item) {
+            updateTextItem(selectedTextId, { uppercase: !item.uppercase });
+            toggleUppercaseBtn.classList.toggle('active');
+        }
+    }
+});
+
+textOutlineCheckbox.addEventListener('change', () => {
+    if (selectedTextId) {
+        updateTextItem(selectedTextId, { outline: textOutlineCheckbox.checked });
+    }
+});
+
+textOutlineColorInput.addEventListener('input', () => {
+    if (selectedTextId) {
+        updateTextItem(selectedTextId, { outlineColor: textOutlineColorInput.value });
+    }
+});
+
+deleteTextBtn.addEventListener('click', () => {
+    if (selectedTextId) {
+        deleteTextItem(selectedTextId);
+    }
+});
+
+// Text overlay download handler
+textDownloadBtn.addEventListener('click', () => {
+    // Generate download from text canvas
+    const forceJpg = forceJpgCheckbox.checked;
+    const outputMimeType = forceJpg ? 'image/jpeg' : sourceMimeType;
+    const isOutputJpg = outputMimeType === 'image/jpeg';
+    const quality = isOutputJpg ? (parseInt(jpgQualityInput.value) || 80) / 100 : 1;
+
+    const dataUrl = textCanvas.toDataURL(outputMimeType, quality);
+    const link = document.createElement('a');
+
+    // Use the same filename pattern as the process view
+    const extension = getExtensionFromMime(outputMimeType);
+    const baseName = outputNameInput.value.trim() || sourceFileName || 'image';
+    let filename;
+    if (addTimestampCheckbox.checked) {
+        const timestamp = getTimestamp();
+        filename = `${baseName} - ${timestamp}.${extension}`;
+    } else {
+        filename = `${baseName}.${extension}`;
+    }
+
+    link.download = filename;
+    link.href = dataUrl;
     link.click();
 });

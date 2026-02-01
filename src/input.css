@@ -132,4 +132,90 @@
     .muted-text {
         color: var(--color-iron-light);
     }
+
+    .tab-btn {
+        background: var(--color-coal-light);
+        color: var(--color-steam);
+        border: 3px solid var(--color-iron-light);
+        border-bottom: none;
+        padding: 0.5rem 1.25rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-size: 0.75rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        border-radius: 6px 6px 0 0;
+        position: relative;
+        top: 3px;
+        margin-right: 2px;
+    }
+
+    .tab-btn:hover {
+        border-color: var(--color-brass);
+        color: var(--color-brass-light);
+    }
+
+    .tab-btn.active {
+        background: var(--color-iron);
+        color: var(--color-brass);
+        border-color: var(--color-brass);
+        z-index: 1;
+    }
+
+    .panel-tabbed {
+        border-top-left-radius: 0;
+    }
+
+    .text-item-chip {
+        background: var(--color-coal);
+        border: 1px solid var(--color-iron-light);
+        padding: 0.5rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        color: var(--color-steam);
+    }
+
+    .text-item-chip:hover {
+        border-color: var(--color-brass);
+    }
+
+    .text-item-chip.selected {
+        border-color: var(--color-brass);
+        background: var(--color-coal-light);
+    }
+
+    .text-item-delete {
+        color: var(--color-iron-light);
+        background: none;
+        border: none;
+        font-size: 1.25rem;
+        line-height: 1;
+        padding: 0 0.25rem;
+        cursor: pointer;
+        transition: color 0.2s;
+    }
+
+    .text-item-delete:hover {
+        color: var(--color-copper);
+    }
+
+    .style-toggle {
+        width: 2rem;
+        height: 2rem;
+        background: var(--color-coal);
+        border: 2px solid var(--color-iron-light);
+        color: var(--color-steam);
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .style-toggle:hover {
+        border-color: var(--color-brass);
+    }
+
+    .style-toggle.active {
+        background: var(--color-brass);
+        color: var(--color-coal);
+        border-color: var(--color-brass-dark);
+    }
 }

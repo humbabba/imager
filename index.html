@@ -29,8 +29,8 @@
             <p class="text-steam text-sm">Images wrangled here</p>
         </div>
 
-        <!-- Three-column layout -->
-        <div class="flex flex-col items-center xl:relative gap-6">
+        <!-- Process View -->
+        <div id="process-view" class="flex flex-col items-center xl:relative gap-6">
             <!-- Source Preview (left on wide, below output on narrow) -->
             <div id="source-container" class="hidden order-3 w-full xl:absolute xl:top-0 xl:right-[calc(50%+19.5rem)] xl:w-80">
                 <div class="panel p-6">
@@ -51,7 +51,12 @@
 
             <!-- Main Control Panel (center) -->
             <div class="order-1 w-full max-w-xl">
-                <div class="panel p-6">
+                <!-- Tab Bar (hidden until image is processed) -->
+                <div id="tab-bar" class="hidden flex ml-4">
+                    <button class="tab-btn tab-process-btn active">Process</button>
+                    <button class="tab-btn tab-text-btn">Text Overlay</button>
+                </div>
+                <div class="panel panel-tabbed p-6">
             <!-- Corner Rivets -->
             <div class="absolute top-2 left-2 rivet"></div>
             <div class="absolute top-2 right-2 rivet"></div>
@@ -195,6 +200,139 @@
                         <p><span class="text-brass">Filesize:</span> <span id="output-filesize"></span></p>
                     </div>
                     <button id="download-btn" class="btn-primary mt-4 w-full px-6 py-3 rounded cursor-pointer">
+                        ⚙ Download Image
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Text Overlay View (hidden by default) -->
+        <div id="text-overlay-view" class="hidden">
+            <div class="flex flex-col xl:flex-row gap-6 justify-center">
+                <!-- Large Canvas Container -->
+                <div class="flex-shrink-0">
+                    <!-- Tab Bar for text overlay view -->
+                    <div id="tab-bar-text" class="flex ml-4">
+                        <button class="tab-btn tab-process-btn">Process</button>
+                        <button class="tab-btn tab-text-btn active">Text Overlay</button>
+                    </div>
+                    <div class="panel panel-tabbed p-6">
+                        <div class="absolute top-2 left-2 rivet"></div>
+                        <div class="absolute top-2 right-2 rivet"></div>
+                        <div class="absolute bottom-2 left-2 rivet"></div>
+                        <div class="absolute bottom-2 right-2 rivet"></div>
+                        <div class="relative">
+                            <canvas id="text-canvas" class="max-w-full border-2 border-iron-light rounded cursor-crosshair" style="max-height: 70vh;"></canvas>
+                            <div id="text-canvas-hint" class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                <span class="text-iron-light text-sm">Click to add text</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Side Panel -->
+                <div class="w-full xl:w-80 flex flex-col gap-6">
+                    <!-- Text Items List -->
+                    <div class="panel p-6">
+                        <div class="absolute top-2 left-2 rivet"></div>
+                        <div class="absolute top-2 right-2 rivet"></div>
+                        <div class="absolute bottom-2 left-2 rivet"></div>
+                        <div class="absolute bottom-2 right-2 rivet"></div>
+
+                        <h2 class="label-text text-lg mb-4">Text Items</h2>
+                        <div id="text-items-list" class="space-y-2 mb-4 max-h-40 overflow-y-auto">
+                            <!-- Text item chips will be rendered here -->
+                        </div>
+                        <button id="add-text-btn" class="btn-secondary w-full px-4 py-2 rounded cursor-pointer text-sm">
+                            + Add Text
+                        </button>
+                    </div>
+
+                    <!-- Style Controls -->
+                    <div class="panel p-6">
+                        <div class="absolute top-2 left-2 rivet"></div>
+                        <div class="absolute top-2 right-2 rivet"></div>
+                        <div class="absolute bottom-2 left-2 rivet"></div>
+                        <div class="absolute bottom-2 right-2 rivet"></div>
+
+                        <h2 class="label-text text-lg mb-4">Style Controls</h2>
+                        <div id="style-controls" class="space-y-4">
+                            <div id="no-selection-msg" class="text-iron-light text-sm text-center py-4">
+                                Select or add a text item to edit
+                            </div>
+
+                            <div id="style-controls-inner" class="hidden space-y-4">
+                                <div>
+                                    <label class="label-text block mb-2">Text</label>
+                                    <input type="text" id="text-content" placeholder="Enter text..." class="input-field w-full px-3 py-2 rounded">
+                                </div>
+
+                                <div>
+                                    <label class="label-text block mb-2">Font</label>
+                                    <select id="text-font" class="input-field w-full px-3 py-2 rounded">
+                                        <option value="Arial">Arial</option>
+                                        <option value="Georgia">Georgia</option>
+                                        <option value="Courier New">Courier New</option>
+                                        <option value="Times New Roman">Times New Roman</option>
+                                        <option value="Verdana">Verdana</option>
+                                    </select>
+                                </div>
+
+                                <div class="flex gap-4">
+                                    <div class="flex-1">
+                                        <label class="label-text block mb-2">Size</label>
+                                        <div class="flex items-center gap-2">
+                                            <input type="number" id="text-size" value="48" min="8" max="500" class="input-field w-20 px-2 py-2 rounded">
+                                            <span class="muted-text">px</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex-1">
+                                        <label class="label-text block mb-2">Color</label>
+                                        <input type="color" id="text-color" value="#ffffff" class="input-field w-full h-10 rounded cursor-pointer">
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="label-text block mb-2">Opacity</label>
+                                    <div class="flex items-center gap-3">
+                                        <input type="range" id="text-opacity" min="0" max="100" value="100" class="flex-1 accent-brass cursor-pointer">
+                                        <span id="text-opacity-value" class="body-text text-sm w-12">100%</span>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="label-text block mb-2">Style</label>
+                                    <div class="flex gap-2">
+                                        <button id="toggle-bold" class="style-toggle rounded font-bold">B</button>
+                                        <button id="toggle-italic" class="style-toggle rounded italic">I</button>
+                                        <button id="toggle-underline" class="style-toggle rounded underline">U</button>
+                                        <button id="toggle-uppercase" class="style-toggle rounded text-xs">AA</button>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="label-text block mb-2">Outline</label>
+                                    <div class="flex items-center gap-4">
+                                        <label class="flex items-center gap-2 cursor-pointer body-text text-sm">
+                                            <input type="checkbox" id="text-outline" class="accent-brass cursor-pointer">
+                                            <span>Enable</span>
+                                        </label>
+                                        <div class="flex items-center gap-2">
+                                            <span class="body-text text-sm">Color:</span>
+                                            <input type="color" id="text-outline-color" value="#000000" class="input-field w-12 h-8 rounded cursor-pointer">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button id="delete-text-btn" class="btn-secondary w-full px-4 py-2 rounded cursor-pointer text-sm mt-4">
+                                    Delete Text
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Download Button -->
+                    <button id="text-download-btn" class="btn-primary w-full px-6 py-3 rounded cursor-pointer">
                         ⚙ Download Image
                     </button>
                 </div>
