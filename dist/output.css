@@ -226,6 +226,9 @@
       max-width: 96rem;
     }
   }
+  .mt-2 {
+    margin-top: calc(var(--spacing) * 2);
+  }
   .mt-3 {
     margin-top: calc(var(--spacing) * 3);
   }
@@ -271,9 +274,6 @@
   .w-16 {
     width: calc(var(--spacing) * 16);
   }
-  .w-20 {
-    width: calc(var(--spacing) * 20);
-  }
   .w-24 {
     width: calc(var(--spacing) * 24);
   }
@@ -285,9 +285,6 @@
   }
   .max-w-xl {
     max-width: var(--container-xl);
-  }
-  .flex-1 {
-    flex: 1;
   }
   .cursor-pointer {
     cursor: pointer;
@@ -399,9 +396,6 @@
   .tracking-widest {
     --tw-tracking: var(--tracking-widest);
     letter-spacing: var(--tracking-widest);
-  }
-  .whitespace-nowrap {
-    white-space: nowrap;
   }
   .text-brass {
     color: var(--color-brass);

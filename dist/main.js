@@ -5,6 +5,7 @@
   var downloadBtn = document.getElementById("download-btn");
   var outputNameInput = document.getElementById("output-name");
   var keepNameCheckbox = document.getElementById("keep-name");
+  var addTimestampCheckbox = document.getElementById("add-timestamp");
   var maxWidthInput = document.getElementById("max-width");
   var maxHeightInput = document.getElementById("max-height");
   var aspectRatioSelect = document.getElementById("aspect-ratio");
@@ -74,8 +75,12 @@
   function updateCropPositionOptions() {
     const aspectRatio = getAspectRatio();
     const resizeMode = document.querySelector('input[name="resize-mode"]:checked').value;
-    if (resizeMode !== "crop" || !aspectRatio || !uploadedImage) {
-      cropPositionContainer.classList.add("hidden");
+    if (resizeMode !== "crop") {
+      cropPositionContainer.style.display = "none";
+      return;
+    }
+    cropPositionContainer.style.display = "flex";
+    if (!aspectRatio || !uploadedImage) {
       return;
     }
     const [ratioW, ratioH] = aspectRatio.split(":").map(Number);
@@ -90,7 +95,6 @@
     centerOption.textContent = "Center crop";
     cropPositionSelect.appendChild(centerOption);
     if (isExact) {
-      cropPositionContainer.classList.add("hidden");
       return;
     }
     if (isWider) {
@@ -112,7 +116,6 @@
       bottomOption.textContent = "Bottom crop";
       cropPositionSelect.appendChild(bottomOption);
     }
-    cropPositionContainer.classList.remove("hidden");
   }
   function updateResizeModeOptions() {
     const resizeMode = document.querySelector('input[name="resize-mode"]:checked').value;
@@ -295,9 +298,14 @@
     const outputBytes = Math.round((dataUrl.length - `data:${sourceMimeType};base64,`.length) * 0.75);
     outputFilesizeEl.textContent = formatFilesize(outputBytes);
     const extension = getExtensionFromMime(outputMimeType);
-    const timestamp = getTimestamp();
     const baseName = outputNameInput.value.trim() || sourceFileName;
-    const generatedFilename = `${baseName} - ${timestamp}.${extension}`;
+    let generatedFilename;
+    if (addTimestampCheckbox.checked) {
+      const timestamp = getTimestamp();
+      generatedFilename = `${baseName} - ${timestamp}.${extension}`;
+    } else {
+      generatedFilename = `${baseName}.${extension}`;
+    }
     outputFilename.textContent = generatedFilename;
     outputDimensions.textContent = `${targetWidth} \xD7 ${targetHeight} px`;
     canvas.dataset.filename = generatedFilename;

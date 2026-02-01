@@ -68,11 +68,15 @@
 
             <div class="mb-5">
                 <label for="output-name" class="label-text block mb-2">Output Filename</label>
-                <div class="flex gap-3 items-center">
-                    <input type="text" id="output-name" placeholder="Optional" class="input-field flex-1 px-3 py-2 rounded">
-                    <label class="flex items-center gap-2 cursor-pointer body-text text-sm whitespace-nowrap">
+                <input type="text" id="output-name" placeholder="Optional" class="input-field w-full px-3 py-2 rounded">
+                <div class="flex gap-4 mt-2">
+                    <label class="flex items-center gap-2 cursor-pointer body-text text-sm">
                         <input type="checkbox" id="keep-name" class="accent-brass cursor-pointer">
-                        <span>Keep</span>
+                        <span>Keep name</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer body-text text-sm">
+                        <input type="checkbox" id="add-timestamp" checked class="accent-brass cursor-pointer">
+                        <span>Timestamp</span>
                     </label>
                 </div>
             </div>
@@ -115,7 +119,7 @@
 
             <div class="mb-5">
                 <label class="label-text block mb-2">Resize Mode</label>
-                <div class="flex gap-6">
+                <div class="flex gap-6 items-center">
                     <label class="flex items-center gap-2 cursor-pointer body-text">
                         <input type="radio" name="resize-mode" value="crop" checked class="accent-brass cursor-pointer">
                         <span>Crop</span>
@@ -124,18 +128,16 @@
                         <input type="radio" name="resize-mode" value="overlay" class="accent-brass cursor-pointer">
                         <span>Overlay</span>
                     </label>
+                    <div id="crop-position-container" style="align-items: center; gap: 0.5rem;">
+                        <select id="crop-position" class="input-field px-3 py-2 rounded">
+                            <option value="center">Center crop</option>
+                            <option value="top">Top crop</option>
+                            <option value="bottom">Bottom crop</option>
+                            <option value="left">Left crop</option>
+                            <option value="right">Right crop</option>
+                        </select>
+                    </div>
                 </div>
-            </div>
-
-            <div id="crop-position-container" class="mb-5">
-                <label for="crop-position" class="label-text block mb-2">Crop Position</label>
-                <select id="crop-position" class="input-field px-3 py-2 rounded">
-                    <option value="center">Center crop</option>
-                    <option value="top">Top crop</option>
-                    <option value="bottom">Bottom crop</option>
-                    <option value="left">Left crop</option>
-                    <option value="right">Right crop</option>
-                </select>
             </div>
 
             <div id="overlay-options-container" class="mb-5 hidden">
@@ -156,17 +158,16 @@
 
             <div class="mb-5">
                 <label class="label-text block mb-2">Output Format</label>
-                <label class="flex items-center gap-2 cursor-pointer body-text">
-                    <input type="checkbox" id="force-jpg" checked class="accent-brass cursor-pointer">
-                    <span>Force JPG output</span>
-                </label>
-            </div>
-
-            <div id="quality-container" class="mb-5">
-                <label class="label-text block mb-2">JPG Quality</label>
-                <div class="flex items-center gap-2">
-                    <input type="number" id="jpg-quality" value="80" min="1" max="100" class="input-field w-20 px-2 py-2 rounded">
-                    <span class="muted-text">%</span>
+                <div class="flex gap-6 items-center">
+                    <label class="flex items-center gap-2 cursor-pointer body-text">
+                        <input type="checkbox" id="force-jpg" checked class="accent-brass cursor-pointer">
+                        <span>Force JPG output</span>
+                    </label>
+                    <div id="quality-container" class="flex items-center gap-2">
+                        <span class="body-text text-sm">Quality:</span>
+                        <input type="number" id="jpg-quality" value="80" min="1" max="100" class="input-field w-16 px-2 py-2 rounded">
+                        <span class="muted-text">%</span>
+                    </div>
                 </div>
             </div>
 

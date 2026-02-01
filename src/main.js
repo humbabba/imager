@@ -3,6 +3,7 @@ const processBtn = document.getElementById('process-btn');
 const downloadBtn = document.getElementById('download-btn');
 const outputNameInput = document.getElementById('output-name');
 const keepNameCheckbox = document.getElementById('keep-name');
+const addTimestampCheckbox = document.getElementById('add-timestamp');
 const maxWidthInput = document.getElementById('max-width');
 const maxHeightInput = document.getElementById('max-height');
 const aspectRatioSelect = document.getElementById('aspect-ratio');
@@ -87,9 +88,17 @@ function updateCropPositionOptions() {
     const aspectRatio = getAspectRatio();
     const resizeMode = document.querySelector('input[name="resize-mode"]:checked').value;
 
-    // Hide if not crop mode or no aspect ratio
-    if (resizeMode !== 'crop' || !aspectRatio || !uploadedImage) {
-        cropPositionContainer.classList.add('hidden');
+    // Hide if not crop mode
+    if (resizeMode !== 'crop') {
+        cropPositionContainer.style.display = 'none';
+        return;
+    }
+
+    // Show in crop mode
+    cropPositionContainer.style.display = 'flex';
+
+    // Only rebuild options if we have image and aspect ratio
+    if (!aspectRatio || !uploadedImage) {
         return;
     }
 
@@ -112,8 +121,6 @@ function updateCropPositionOptions() {
     cropPositionSelect.appendChild(centerOption);
 
     if (isExact) {
-        // No cropping needed, hide the container
-        cropPositionContainer.classList.add('hidden');
         return;
     }
 
@@ -140,8 +147,6 @@ function updateCropPositionOptions() {
         bottomOption.textContent = 'Bottom crop';
         cropPositionSelect.appendChild(bottomOption);
     }
-
-    cropPositionContainer.classList.remove('hidden');
 }
 
 // Toggle crop position and overlay options visibility based on resize mode
@@ -375,9 +380,14 @@ processBtn.addEventListener('click', () => {
 
     // Update output info
     const extension = getExtensionFromMime(outputMimeType);
-    const timestamp = getTimestamp();
     const baseName = outputNameInput.value.trim() || sourceFileName;
-    const generatedFilename = `${baseName} - ${timestamp}.${extension}`;
+    let generatedFilename;
+    if (addTimestampCheckbox.checked) {
+        const timestamp = getTimestamp();
+        generatedFilename = `${baseName} - ${timestamp}.${extension}`;
+    } else {
+        generatedFilename = `${baseName}.${extension}`;
+    }
     outputFilename.textContent = generatedFilename;
     outputDimensions.textContent = `${targetWidth} × ${targetHeight} px`;
 
