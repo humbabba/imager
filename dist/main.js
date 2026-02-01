@@ -1,6 +1,7 @@
 (() => {
   // src/main.js
   var fileInput = document.getElementById("image-upload");
+  var foo = "bar";
   var processBtn = document.getElementById("process-btn");
   var downloadBtn = document.getElementById("download-btn");
   var maxWidthInput = document.getElementById("max-width");
@@ -14,6 +15,7 @@
   var qualityContainer = document.getElementById("quality-container");
   var jpgQualityInput = document.getElementById("jpg-quality");
   var forceJpgCheckbox = document.getElementById("force-jpg");
+  console.log("Foo: ", foo);
   function updateQualityVisibility() {
     const isJpg = sourceMimeType === "image/jpeg";
     const forceJpg = forceJpgCheckbox.checked;
