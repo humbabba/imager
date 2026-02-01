@@ -1,6 +1,20 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect x="2" y="4" width="28" height="24" rx="3" fill="#2563eb"/>
-  <circle cx="11" cy="12" r="3" fill="#fbbf24"/>
-  <polygon points="8,24 14,16 18,20 22,14 28,24" fill="#22c55e"/>
-  <polygon points="16,24 22,14 28,24" fill="#16a34a"/>
+  <defs>
+    <linearGradient id="brass" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#d4a84b"/>
+      <stop offset="50%" style="stop-color:#b5854a"/>
+      <stop offset="100%" style="stop-color:#8b6914"/>
+    </linearGradient>
+  </defs>
+  <!-- Outer gear -->
+  <path d="M16 2 L18 6 L22 4 L22 8 L26 8 L24 12 L28 14 L24 16 L28 18 L24 20 L26 24 L22 24 L22 28 L18 26 L16 30 L14 26 L10 28 L10 24 L6 24 L8 20 L4 18 L8 16 L4 14 L8 12 L6 8 L10 8 L10 4 L14 6 Z" fill="url(#brass)" stroke="#5a3d1a" stroke-width="0.5"/>
+  <!-- Inner circle -->
+  <circle cx="16" cy="16" r="8" fill="#2d2d2d" stroke="#8b6914" stroke-width="1.5"/>
+  <!-- Center hole -->
+  <circle cx="16" cy="16" r="3" fill="#1a1a1a" stroke="#5a3d1a" stroke-width="0.5"/>
+  <!-- Spokes -->
+  <rect x="15" y="8" width="2" height="5" fill="#8b6914" rx="0.5"/>
+  <rect x="15" y="19" width="2" height="5" fill="#8b6914" rx="0.5"/>
+  <rect x="8" y="15" width="5" height="2" fill="#8b6914" rx="0.5"/>
+  <rect x="19" y="15" width="5" height="2" fill="#8b6914" rx="0.5"/>
 </svg>

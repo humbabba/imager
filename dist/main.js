@@ -13,6 +13,13 @@
   var overlayShadowInput = document.getElementById("overlay-shadow");
   var qualityContainer = document.getElementById("quality-container");
   var jpgQualityInput = document.getElementById("jpg-quality");
+  var forceJpgCheckbox = document.getElementById("force-jpg");
+  function updateQualityVisibility() {
+    const isJpg = sourceMimeType === "image/jpeg";
+    const forceJpg = forceJpgCheckbox.checked;
+    qualityContainer.classList.toggle("hidden", !isJpg && !forceJpg);
+  }
+  forceJpgCheckbox.addEventListener("change", updateQualityVisibility);
   var customRatioW = document.getElementById("custom-ratio-w");
   var customRatioH = document.getElementById("custom-ratio-h");
   var resizeModeInputs = document.querySelectorAll('input[name="resize-mode"]');
@@ -149,8 +156,7 @@
         sourceDimensionsEl.textContent = `${img.width} \xD7 ${img.height} px`;
         sourceFilesizeEl.textContent = formatFilesize(file.size);
         sourceContainer.classList.remove("hidden");
-        const isJpg = sourceMimeType === "image/jpeg";
-        qualityContainer.classList.toggle("hidden", !isJpg);
+        updateQualityVisibility();
       };
       img.src = objectUrl;
     }
@@ -276,13 +282,16 @@
         targetHeight
       );
     }
-    const extension = getExtensionFromMime(sourceMimeType);
+    const extension = getExtensionFromMime(outputMimeType);
     const timestamp = getTimestamp();
     const generatedFilename = `${sourceFileName} - se_imager_${timestamp}.${extension}`;
     outputFilename.textContent = generatedFilename;
     outputDimensions.textContent = `${targetWidth} \xD7 ${targetHeight} px`;
-    const quality = sourceMimeType === "image/jpeg" ? (parseInt(jpgQualityInput.value) || 80) / 100 : 1;
-    const dataUrl = canvas.toDataURL(sourceMimeType, quality);
+    const forceJpg = forceJpgCheckbox.checked;
+    const outputMimeType = forceJpg ? "image/jpeg" : sourceMimeType;
+    const isOutputJpg = outputMimeType === "image/jpeg";
+    const quality = isOutputJpg ? (parseInt(jpgQualityInput.value) || 80) / 100 : 1;
+    const dataUrl = canvas.toDataURL(outputMimeType, quality);
     const outputBytes = Math.round((dataUrl.length - `data:${sourceMimeType};base64,`.length) * 0.75);
     outputFilesizeEl.textContent = formatFilesize(outputBytes);
     canvas.dataset.filename = generatedFilename;

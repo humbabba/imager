@@ -11,6 +11,16 @@ const overlayMarginInput = document.getElementById('overlay-margin');
 const overlayShadowInput = document.getElementById('overlay-shadow');
 const qualityContainer = document.getElementById('quality-container');
 const jpgQualityInput = document.getElementById('jpg-quality');
+const forceJpgCheckbox = document.getElementById('force-jpg');
+
+// Toggle quality visibility based on force JPG checkbox
+function updateQualityVisibility() {
+    const isJpg = sourceMimeType === 'image/jpeg';
+    const forceJpg = forceJpgCheckbox.checked;
+    qualityContainer.classList.toggle('hidden', !isJpg && !forceJpg);
+}
+
+forceJpgCheckbox.addEventListener('change', updateQualityVisibility);
 const customRatioW = document.getElementById('custom-ratio-w');
 const customRatioH = document.getElementById('custom-ratio-h');
 const resizeModeInputs = document.querySelectorAll('input[name="resize-mode"]');
@@ -187,9 +197,8 @@ fileInput.addEventListener('change', (e) => {
             sourceFilesizeEl.textContent = formatFilesize(file.size);
             sourceContainer.classList.remove('hidden');
 
-            // Show quality option for JPG files
-            const isJpg = sourceMimeType === 'image/jpeg';
-            qualityContainer.classList.toggle('hidden', !isJpg);
+            // Update quality visibility
+            updateQualityVisibility();
         };
         img.src = objectUrl;
     }
@@ -349,15 +358,18 @@ processBtn.addEventListener('click', () => {
     }
 
     // Update output info
-    const extension = getExtensionFromMime(sourceMimeType);
+    const extension = getExtensionFromMime(outputMimeType);
     const timestamp = getTimestamp();
     const generatedFilename = `${sourceFileName} - se_imager_${timestamp}.${extension}`;
     outputFilename.textContent = generatedFilename;
     outputDimensions.textContent = `${targetWidth} × ${targetHeight} px`;
 
-    // Calculate and display output filesize
-    const quality = sourceMimeType === 'image/jpeg' ? (parseInt(jpgQualityInput.value) || 80) / 100 : 1;
-    const dataUrl = canvas.toDataURL(sourceMimeType, quality);
+    // Determine output format and quality
+    const forceJpg = forceJpgCheckbox.checked;
+    const outputMimeType = forceJpg ? 'image/jpeg' : sourceMimeType;
+    const isOutputJpg = outputMimeType === 'image/jpeg';
+    const quality = isOutputJpg ? (parseInt(jpgQualityInput.value) || 80) / 100 : 1;
+    const dataUrl = canvas.toDataURL(outputMimeType, quality);
     const outputBytes = Math.round((dataUrl.length - `data:${sourceMimeType};base64,`.length) * 0.75);
     outputFilesizeEl.textContent = formatFilesize(outputBytes);
 

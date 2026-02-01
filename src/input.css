@@ -1,1 +1,135 @@
 @import "tailwindcss";
+
+@theme {
+    --color-brass: #b5854a;
+    --color-brass-dark: #8b6914;
+    --color-brass-light: #d4a84b;
+    --color-copper: #b87333;
+    --color-copper-dark: #8b4513;
+    --color-iron: #3d3d3d;
+    --color-iron-light: #5a5a5a;
+    --color-coal: #1a1a1a;
+    --color-coal-light: #2d2d2d;
+    --color-rust: #8b4513;
+    --color-steam: #c9c9c9;
+    --color-parchment: #f5e6c8;
+    --color-parchment-dark: #e8d4a8;
+}
+
+@layer base {
+    body {
+        background: linear-gradient(135deg, var(--color-coal) 0%, var(--color-coal-light) 100%);
+        min-height: 100vh;
+    }
+}
+
+@layer components {
+    .panel {
+        background: linear-gradient(180deg, var(--color-iron) 0%, var(--color-coal-light) 100%);
+        border: 3px solid var(--color-brass);
+        border-radius: 4px;
+        box-shadow:
+            inset 0 1px 0 rgba(255,255,255,0.1),
+            0 4px 12px rgba(0,0,0,0.5),
+            0 0 0 1px var(--color-brass-dark);
+        position: relative;
+    }
+
+    .panel::before {
+        content: '';
+        position: absolute;
+        top: 8px;
+        left: 8px;
+        right: 8px;
+        bottom: 8px;
+        border: 1px solid var(--color-brass-dark);
+        border-radius: 2px;
+        pointer-events: none;
+        opacity: 0.3;
+    }
+
+    .rivet {
+        width: 8px;
+        height: 8px;
+        background: radial-gradient(circle at 30% 30%, var(--color-brass-light), var(--color-brass-dark));
+        border-radius: 50%;
+        box-shadow: inset 0 -1px 2px rgba(0,0,0,0.5);
+    }
+
+    .input-field {
+        background: var(--color-coal);
+        border: 2px solid var(--color-iron-light);
+        color: var(--color-parchment);
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .input-field:focus {
+        border-color: var(--color-brass);
+        box-shadow: 0 0 8px rgba(181, 133, 74, 0.4);
+        outline: none;
+    }
+
+    .input-field::placeholder {
+        color: var(--color-iron-light);
+    }
+
+    .btn-primary {
+        background: linear-gradient(180deg, var(--color-brass) 0%, var(--color-brass-dark) 100%);
+        color: var(--color-coal);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        border: 2px solid var(--color-brass-dark);
+        box-shadow:
+            inset 0 1px 0 rgba(255,255,255,0.2),
+            0 2px 4px rgba(0,0,0,0.3);
+        transition: all 0.2s;
+    }
+
+    .btn-primary:hover {
+        background: linear-gradient(180deg, var(--color-brass-light) 0%, var(--color-brass) 100%);
+        box-shadow:
+            inset 0 1px 0 rgba(255,255,255,0.3),
+            0 4px 8px rgba(0,0,0,0.4);
+    }
+
+    .btn-primary:disabled {
+        background: linear-gradient(180deg, var(--color-iron-light) 0%, var(--color-iron) 100%);
+        border-color: var(--color-iron);
+        color: var(--color-iron-light);
+        cursor: not-allowed;
+    }
+
+    .btn-secondary {
+        background: linear-gradient(180deg, var(--color-copper) 0%, var(--color-copper-dark) 100%);
+        color: var(--color-parchment);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        border: 2px solid var(--color-copper-dark);
+        box-shadow:
+            inset 0 1px 0 rgba(255,255,255,0.2),
+            0 2px 4px rgba(0,0,0,0.3);
+        transition: all 0.2s;
+    }
+
+    .btn-secondary:hover {
+        background: linear-gradient(180deg, var(--color-brass) 0%, var(--color-copper) 100%);
+    }
+
+    .label-text {
+        color: var(--color-brass);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .body-text {
+        color: var(--color-steam);
+    }
+
+    .muted-text {
+        color: var(--color-iron-light);
+    }
+}
