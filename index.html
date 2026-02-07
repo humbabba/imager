@@ -237,7 +237,7 @@
             <div class="flex flex-col xl:flex-row gap-4 justify-center mx-auto" style="max-width: 1400px;">
                 <!-- Left Column: Text Tools -->
                 <div class="w-full xl:w-96 flex-shrink-0 order-2 xl:order-1 xl:max-h-[calc(100vh-6rem)] xl:overflow-y-auto">
-                    <div class="panel p-5">
+                    <div class="panel p-6">
                         <div class="absolute top-2 left-2 rivet"></div>
                         <div class="absolute top-2 right-2 rivet"></div>
                         <div class="absolute bottom-2 left-2 rivet"></div>
@@ -399,13 +399,13 @@
                 </div>
 
                 <!-- Center Column: Canvas + Output -->
-                <div class="flex-1 min-w-0 order-1 xl:order-2" style="max-width: 1000px;">
+                <div class="min-w-0 order-1 xl:order-2" style="max-width: 1000px;">
                     <!-- Tab Bar for text overlay view -->
                     <div id="tab-bar-text" class="flex ml-4">
                         <button class="tab-btn tab-process-btn">Process</button>
                         <button class="tab-btn tab-text-btn active">Text Overlay</button>
                     </div>
-                    <div class="panel panel-tabbed p-4">
+                    <div class="panel panel-tabbed p-6">
                         <div class="absolute top-2 left-2 rivet"></div>
                         <div class="absolute top-2 right-2 rivet"></div>
                         <div class="absolute bottom-2 left-2 rivet"></div>
@@ -421,10 +421,10 @@
                             <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
                                 <div class="text-sm body-text flex gap-4 flex-wrap">
                                     <span><span class="text-brass">File:</span> <span id="text-output-filename"></span></span>
-                                    <span><span class="text-brass">Dims:</span> <span id="text-output-dimensions"></span></span>
+                                    <span><span class="text-brass">Dimensions:</span> <span id="text-output-dimensions"></span></span>
                                     <span><span class="text-brass">Size:</span> <span id="text-output-filesize"></span></span>
                                 </div>
-                                <div class="flex items-center gap-2 ml-auto">
+                                <div class="flex items-center gap-2 mr-auto">
                                     <input type="text" id="text-output-name" placeholder="Filename" class="input-field px-2 py-1 rounded text-sm w-36">
                                     <button id="text-download-btn" class="btn-primary px-4 py-1 rounded cursor-pointer text-sm">⚙ Download</button>
                                     <button id="text-preview-btn" class="btn-secondary px-3 py-1 rounded cursor-pointer text-sm" title="Open full size in new window">⧉</button>
