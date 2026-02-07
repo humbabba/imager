@@ -393,6 +393,7 @@ processBtn.addEventListener('click', () => {
 
     // Store for download
     canvas.dataset.filename = generatedFilename;
+    canvas.dataset.baseName = baseName;
     canvas.dataset.dataUrl = dataUrl;
 
     // Clear output name if not keeping
@@ -853,7 +854,7 @@ textDownloadBtn.addEventListener('click', () => {
 
     // Use the same filename pattern as the process view
     const extension = getExtensionFromMime(outputMimeType);
-    const baseName = outputNameInput.value.trim() || sourceFileName || 'image';
+    const baseName = canvas.dataset.baseName || outputNameInput.value.trim() || sourceFileName || 'image';
     let filename;
     if (addTimestampCheckbox.checked) {
         const timestamp = getTimestamp();

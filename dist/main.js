@@ -309,6 +309,7 @@
     outputFilename.textContent = generatedFilename;
     outputDimensions.textContent = `${targetWidth} \xD7 ${targetHeight} px`;
     canvas.dataset.filename = generatedFilename;
+    canvas.dataset.baseName = baseName;
     canvas.dataset.dataUrl = dataUrl;
     if (!keepNameCheckbox.checked) {
       outputNameInput.value = "";
@@ -669,7 +670,7 @@
     const dataUrl = textCanvas.toDataURL(outputMimeType, quality);
     const link = document.createElement("a");
     const extension = getExtensionFromMime(outputMimeType);
-    const baseName = outputNameInput.value.trim() || sourceFileName || "image";
+    const baseName = canvas.dataset.baseName || outputNameInput.value.trim() || sourceFileName || "image";
     let filename;
     if (addTimestampCheckbox.checked) {
       const timestamp = getTimestamp();
