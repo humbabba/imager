@@ -5,6 +5,7 @@
   var downloadBtn = document.getElementById("download-btn");
   var previewBtn = document.getElementById("preview-btn");
   var outputNameInput = document.getElementById("output-name");
+  var outputNameFinalInput = document.getElementById("output-name-final");
   var keepNameCheckbox = document.getElementById("keep-name");
   var addTimestampCheckbox = document.getElementById("add-timestamp");
   var maxWidthInput = document.getElementById("max-width");
@@ -325,6 +326,9 @@
     canvas.dataset.filename = generatedFilename;
     canvas.dataset.baseName = baseName;
     canvas.dataset.dataUrl = dataUrl;
+    canvas.dataset.width = targetWidth;
+    canvas.dataset.height = targetHeight;
+    outputNameFinalInput.value = baseName;
     if (!keepNameCheckbox.checked) {
       outputNameInput.value = "";
     }
@@ -334,10 +338,39 @@
     }
     showTextOverlayTab();
   });
+  var currentTab = "process";
+  function getCurrentOutputData() {
+    const forceJpg = forceJpgCheckbox.checked;
+    const outputMimeType = forceJpg ? "image/jpeg" : sourceMimeType;
+    const isOutputJpg = outputMimeType === "image/jpeg";
+    const quality = isOutputJpg ? (parseInt(jpgQualityInput.value) || 80) / 100 : 1;
+    const extension = getExtensionFromMime(outputMimeType);
+    const baseName = outputNameFinalInput.value.trim() || sourceFileName || "image";
+    let filename;
+    if (addTimestampCheckbox.checked) {
+      const timestamp = getTimestamp();
+      filename = `${baseName} - ${timestamp}.${extension}`;
+    } else {
+      filename = `${baseName}.${extension}`;
+    }
+    let dataUrl;
+    let width, height;
+    if (currentTab === "text" && baseImageData) {
+      dataUrl = textCanvas.toDataURL(outputMimeType, quality);
+      width = textCanvas.width;
+      height = textCanvas.height;
+    } else {
+      dataUrl = canvas.dataset.dataUrl;
+      width = parseInt(canvas.dataset.width) || canvas.width;
+      height = parseInt(canvas.dataset.height) || canvas.height;
+    }
+    return { dataUrl, filename, width, height, outputMimeType };
+  }
   downloadBtn.addEventListener("click", () => {
+    const { dataUrl, filename } = getCurrentOutputData();
     const link = document.createElement("a");
-    link.download = canvas.dataset.filename;
-    link.href = canvas.dataset.dataUrl;
+    link.download = filename;
+    link.href = dataUrl;
     link.click();
   });
   var previewWindow = null;
@@ -345,8 +378,7 @@
     if (!previewWindow || previewWindow.closed) {
       previewWindow = window.open("", "imager-preview", "menubar=no,toolbar=no,location=no,status=no");
     }
-    const dataUrl = canvas.dataset.dataUrl;
-    const filename = canvas.dataset.filename || "preview";
+    const { dataUrl, filename } = getCurrentOutputData();
     previewWindow.document.open();
     previewWindow.document.write(`
         <!DOCTYPE html>
@@ -376,7 +408,6 @@
   var textCtx = textCanvas.getContext("2d");
   var textItemsList = document.getElementById("text-items-list");
   var addTextBtn = document.getElementById("add-text-btn");
-  var textDownloadBtn = document.getElementById("text-download-btn");
   var noSelectionMsg = document.getElementById("no-selection-msg");
   var styleControlsInner = document.getElementById("style-controls-inner");
   var textContentInput = document.getElementById("text-content");
@@ -428,7 +459,23 @@
       outlineColor: lastTextStyle.outlineColor
     };
   }
+  function updateOutputPane() {
+    const { dataUrl, filename, width, height, outputMimeType } = getCurrentOutputData();
+    const img = new Image();
+    img.onload = () => {
+      canvas.width = width;
+      canvas.height = height;
+      ctx.drawImage(img, 0, 0);
+    };
+    img.src = dataUrl;
+    outputFilename.textContent = filename;
+    outputDimensions.textContent = `${width} \xD7 ${height} px`;
+    const outputBytes = Math.round((dataUrl.length - `data:${outputMimeType};base64,`.length) * 0.75);
+    outputFilesizeEl.textContent = formatFilesize(outputBytes);
+  }
+  var outputContainerPlaceholder = document.getElementById("output-container-placeholder");
   function switchToTab(tabName) {
+    currentTab = tabName;
     document.querySelectorAll(".tab-process-btn").forEach((btn) => {
       btn.classList.toggle("active", tabName === "process");
     });
@@ -438,10 +485,20 @@
     if (tabName === "process") {
       processView.classList.remove("hidden");
       textOverlayView.classList.add("hidden");
+      processView.appendChild(outputContainer);
+      outputContainer.className = "hidden order-2 w-full xl:absolute xl:top-0 xl:left-[calc(50%+19.5rem)] xl:w-80";
+      if (baseImageData) {
+        outputContainer.classList.remove("hidden");
+      }
     } else if (tabName === "text") {
       processView.classList.add("hidden");
       textOverlayView.classList.remove("hidden");
+      outputContainerPlaceholder.appendChild(outputContainer);
+      outputContainer.className = "w-full";
       renderTextOverlay();
+    }
+    if (baseImageData) {
+      updateOutputPane();
     }
   }
   document.querySelectorAll(".tab-process-btn").forEach((btn) => {
@@ -473,6 +530,8 @@
     renderTextItemsList();
     renderTextOverlay();
     updateHintVisibility();
+    textContentInput.focus();
+    textContentInput.select();
   }
   function updateTextItem(id, updates) {
     const item = textItems.find((i) => i.id === id);
@@ -614,6 +673,9 @@
       textItems.forEach((item) => {
         drawTextItem(textCtx, item, textCanvas.width, textCanvas.height);
       });
+      if (currentTab === "text") {
+        updateOutputPane();
+      }
     };
     img.src = baseImageData.dataUrl;
   }
@@ -706,24 +768,14 @@
       deleteTextItem(selectedTextId);
     }
   });
-  textDownloadBtn.addEventListener("click", () => {
-    const forceJpg = forceJpgCheckbox.checked;
-    const outputMimeType = forceJpg ? "image/jpeg" : sourceMimeType;
-    const isOutputJpg = outputMimeType === "image/jpeg";
-    const quality = isOutputJpg ? (parseInt(jpgQualityInput.value) || 80) / 100 : 1;
-    const dataUrl = textCanvas.toDataURL(outputMimeType, quality);
-    const link = document.createElement("a");
-    const extension = getExtensionFromMime(outputMimeType);
-    const baseName = canvas.dataset.baseName || outputNameInput.value.trim() || sourceFileName || "image";
-    let filename;
-    if (addTimestampCheckbox.checked) {
-      const timestamp = getTimestamp();
-      filename = `${baseName} - ${timestamp}.${extension}`;
-    } else {
-      filename = `${baseName}.${extension}`;
+  outputNameInput.addEventListener("input", () => {
+    outputNameFinalInput.value = outputNameInput.value;
+  });
+  outputNameFinalInput.addEventListener("input", () => {
+    outputNameInput.value = outputNameFinalInput.value;
+    if (baseImageData) {
+      const { filename } = getCurrentOutputData();
+      outputFilename.textContent = filename;
     }
-    link.download = filename;
-    link.href = dataUrl;
-    link.click();
   });
 })();

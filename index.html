@@ -203,7 +203,7 @@
                 </div>
             </div>
 
-            <!-- Output Preview (right on wide, above source on narrow) -->
+            <!-- Output Preview (right side) -->
             <div id="output-container" class="hidden order-2 w-full xl:absolute xl:top-0 xl:left-[calc(50%+19.5rem)] xl:w-80">
                 <div class="panel p-6">
                     <div class="absolute top-2 left-2 rivet"></div>
@@ -218,7 +218,11 @@
                         <p><span class="text-brass">Dimensions:</span> <span id="output-dimensions"></span></p>
                         <p><span class="text-brass">Filesize:</span> <span id="output-filesize"></span></p>
                     </div>
-                    <div class="flex gap-2 mt-4">
+                    <div class="mb-4 mt-4">
+                        <label for="output-name-final" class="label-text block mb-2">Output Filename</label>
+                        <input type="text" id="output-name-final" placeholder="Optional" class="input-field w-full px-3 py-2 rounded">
+                    </div>
+                    <div class="flex gap-2">
                         <button id="download-btn" class="btn-primary flex-1 px-6 py-3 rounded cursor-pointer">
                             ⚙ Download
                         </button>
@@ -355,10 +359,8 @@
                         </div>
                     </div>
 
-                    <!-- Download Button -->
-                    <button id="text-download-btn" class="btn-primary w-full px-6 py-3 rounded cursor-pointer">
-                        ⚙ Download Image
-                    </button>
+                    <!-- Placeholder for output container when in text overlay view -->
+                    <div id="output-container-placeholder"></div>
                 </div>
             </div>
         </div>
