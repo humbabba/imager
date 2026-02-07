@@ -72,6 +72,13 @@
   var sourceFilesizeEl = document.getElementById("source-filesize");
   var outputFilesizeEl = document.getElementById("output-filesize");
   var ctx = canvas.getContext("2d");
+  var textOutputBar = document.getElementById("text-output-bar");
+  var textOutputFilename = document.getElementById("text-output-filename");
+  var textOutputDimensions = document.getElementById("text-output-dimensions");
+  var textOutputFilesize = document.getElementById("text-output-filesize");
+  var textOutputNameInput = document.getElementById("text-output-name");
+  var textDownloadBtn = document.getElementById("text-download-btn");
+  var textPreviewBtn = document.getElementById("text-preview-btn");
   function formatFilesize(bytes) {
     if (bytes < 1024) return bytes + " B";
     if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
@@ -329,6 +336,7 @@
     canvas.dataset.width = targetWidth;
     canvas.dataset.height = targetHeight;
     outputNameFinalInput.value = baseName;
+    textOutputNameInput.value = baseName;
     if (!keepNameCheckbox.checked) {
       outputNameInput.value = "";
     }
@@ -422,10 +430,19 @@
   var toggleUppercaseBtn = document.getElementById("toggle-uppercase");
   var textOutlineCheckbox = document.getElementById("text-outline");
   var textOutlineColorInput = document.getElementById("text-outline-color");
+  var textShadowCheckbox = document.getElementById("text-shadow");
+  var textShadowXInput = document.getElementById("text-shadow-x");
+  var textShadowYInput = document.getElementById("text-shadow-y");
+  var textShadowBlurInput = document.getElementById("text-shadow-blur");
+  var textShadowColorInput = document.getElementById("text-shadow-color");
+  var textShadowOpacityInput = document.getElementById("text-shadow-opacity");
   var deleteTextBtn = document.getElementById("delete-text-btn");
+  var centerHBtn = document.getElementById("center-h-btn");
+  var centerVBtn = document.getElementById("center-v-btn");
   var textItems = [];
   var selectedTextId = null;
   var baseImageData = null;
+  var isDragging = false;
   var lastTextStyle = {
     fontFamily: "Arial",
     fontSize: 48,
@@ -436,7 +453,13 @@
     underline: false,
     uppercase: false,
     outline: false,
-    outlineColor: "#000000"
+    outlineColor: "#000000",
+    shadow: false,
+    shadowX: 3,
+    shadowY: 3,
+    shadowBlur: 4,
+    shadowColor: "#000000",
+    shadowOpacity: 80
   };
   function generateId() {
     return Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
@@ -456,7 +479,13 @@
       underline: lastTextStyle.underline,
       uppercase: lastTextStyle.uppercase,
       outline: lastTextStyle.outline,
-      outlineColor: lastTextStyle.outlineColor
+      outlineColor: lastTextStyle.outlineColor,
+      shadow: lastTextStyle.shadow,
+      shadowX: lastTextStyle.shadowX,
+      shadowY: lastTextStyle.shadowY,
+      shadowBlur: lastTextStyle.shadowBlur,
+      shadowColor: lastTextStyle.shadowColor,
+      shadowOpacity: lastTextStyle.shadowOpacity
     };
   }
   function updateOutputPane() {
@@ -472,8 +501,11 @@
     outputDimensions.textContent = `${width} \xD7 ${height} px`;
     const outputBytes = Math.round((dataUrl.length - `data:${outputMimeType};base64,`.length) * 0.75);
     outputFilesizeEl.textContent = formatFilesize(outputBytes);
+    textOutputFilename.textContent = filename;
+    textOutputDimensions.textContent = `${width} \xD7 ${height} px`;
+    textOutputFilesize.textContent = formatFilesize(outputBytes);
+    textOutputBar.classList.remove("hidden");
   }
-  var outputContainerPlaceholder = document.getElementById("output-container-placeholder");
   function switchToTab(tabName) {
     currentTab = tabName;
     document.querySelectorAll(".tab-process-btn").forEach((btn) => {
@@ -485,16 +517,9 @@
     if (tabName === "process") {
       processView.classList.remove("hidden");
       textOverlayView.classList.add("hidden");
-      processView.appendChild(outputContainer);
-      outputContainer.className = "hidden order-2 w-full xl:absolute xl:top-0 xl:left-[calc(50%+19.5rem)] xl:w-80";
-      if (baseImageData) {
-        outputContainer.classList.remove("hidden");
-      }
     } else if (tabName === "text") {
       processView.classList.add("hidden");
       textOverlayView.classList.remove("hidden");
-      outputContainerPlaceholder.appendChild(outputContainer);
-      outputContainer.className = "w-full";
       renderTextOverlay();
     }
     if (baseImageData) {
@@ -509,10 +534,14 @@
   });
   function showTextOverlayTab() {
     tabBar.classList.remove("hidden");
+    const dataUrl = canvas.toDataURL();
+    const img = new Image();
+    img.src = dataUrl;
     baseImageData = {
       width: canvas.width,
       height: canvas.height,
-      dataUrl: canvas.toDataURL()
+      dataUrl,
+      image: img
     };
   }
   function getCanvasClickPosition(event, canvasEl) {
@@ -537,7 +566,7 @@
     const item = textItems.find((i) => i.id === id);
     if (item) {
       Object.assign(item, updates);
-      const styleKeys = ["fontFamily", "fontSize", "color", "opacity", "bold", "italic", "underline", "uppercase", "outline", "outlineColor"];
+      const styleKeys = ["fontFamily", "fontSize", "color", "opacity", "bold", "italic", "underline", "uppercase", "outline", "outlineColor", "shadow", "shadowX", "shadowY", "shadowBlur", "shadowColor", "shadowOpacity"];
       styleKeys.forEach((key) => {
         if (key in item) {
           lastTextStyle[key] = item[key];
@@ -564,7 +593,7 @@
     selectedTextId = id;
     const item = textItems.find((i) => i.id === id);
     if (item) {
-      const styleKeys = ["fontFamily", "fontSize", "color", "opacity", "bold", "italic", "underline", "uppercase", "outline", "outlineColor"];
+      const styleKeys = ["fontFamily", "fontSize", "color", "opacity", "bold", "italic", "underline", "uppercase", "outline", "outlineColor", "shadow", "shadowX", "shadowY", "shadowBlur", "shadowColor", "shadowOpacity"];
       styleKeys.forEach((key) => {
         if (key in item) {
           lastTextStyle[key] = item[key];
@@ -598,6 +627,12 @@
       toggleUppercaseBtn.classList.toggle("active", item.uppercase);
       textOutlineCheckbox.checked = item.outline;
       textOutlineColorInput.value = item.outlineColor;
+      textShadowCheckbox.checked = item.shadow;
+      textShadowXInput.value = item.shadowX;
+      textShadowYInput.value = item.shadowY;
+      textShadowBlurInput.value = item.shadowBlur;
+      textShadowColorInput.value = item.shadowColor;
+      textShadowOpacityInput.value = item.shadowOpacity;
     } else {
       noSelectionMsg.classList.remove("hidden");
       styleControlsInner.classList.add("hidden");
@@ -642,6 +677,16 @@
     ctx2.textBaseline = "top";
     ctx2.globalAlpha = item.opacity / 100;
     const displayText = item.uppercase ? item.text.toUpperCase() : item.text;
+    if (item.shadow) {
+      const r = parseInt(item.shadowColor.slice(1, 3), 16);
+      const g = parseInt(item.shadowColor.slice(3, 5), 16);
+      const b = parseInt(item.shadowColor.slice(5, 7), 16);
+      const a = item.shadowOpacity / 100;
+      ctx2.shadowColor = `rgba(${r}, ${g}, ${b}, ${a})`;
+      ctx2.shadowOffsetX = item.shadowX;
+      ctx2.shadowOffsetY = item.shadowY;
+      ctx2.shadowBlur = item.shadowBlur;
+    }
     if (item.outline) {
       ctx2.strokeStyle = item.outlineColor;
       ctx2.lineWidth = Math.max(2, item.fontSize / 12);
@@ -650,6 +695,10 @@
     }
     ctx2.fillStyle = item.color;
     ctx2.fillText(displayText, x, y);
+    ctx2.shadowColor = "transparent";
+    ctx2.shadowOffsetX = 0;
+    ctx2.shadowOffsetY = 0;
+    ctx2.shadowBlur = 0;
     if (item.underline) {
       const metrics = ctx2.measureText(displayText);
       const underlineY = y + item.fontSize * 0.95;
@@ -664,26 +713,46 @@
     ctx2.globalAlpha = 1;
   }
   function renderTextOverlay() {
-    if (!baseImageData) return;
-    textCanvas.width = baseImageData.width;
-    textCanvas.height = baseImageData.height;
-    const img = new Image();
-    img.onload = () => {
-      textCtx.drawImage(img, 0, 0);
-      textItems.forEach((item) => {
-        drawTextItem(textCtx, item, textCanvas.width, textCanvas.height);
-      });
-      if (currentTab === "text") {
-        updateOutputPane();
-      }
-    };
-    img.src = baseImageData.dataUrl;
+    if (!baseImageData || !baseImageData.image) return;
+    if (textCanvas.width !== baseImageData.width || textCanvas.height !== baseImageData.height) {
+      textCanvas.width = baseImageData.width;
+      textCanvas.height = baseImageData.height;
+    }
+    textCtx.drawImage(baseImageData.image, 0, 0);
+    textItems.forEach((item) => {
+      drawTextItem(textCtx, item, textCanvas.width, textCanvas.height);
+    });
+    if (currentTab === "text") {
+      updateOutputPane();
+    }
   }
-  textCanvas.addEventListener("click", (e) => {
-    const pos = getCanvasClickPosition(e, textCanvas);
+  textCanvas.addEventListener("mousedown", (e) => {
     if (selectedTextId) {
+      isDragging = true;
+      textCanvas.style.cursor = "grabbing";
+    }
+  });
+  textCanvas.addEventListener("mousemove", (e) => {
+    if (isDragging && selectedTextId) {
+      const pos = getCanvasClickPosition(e, textCanvas);
       updateTextItem(selectedTextId, { x: pos.x, y: pos.y });
-    } else {
+    }
+  });
+  textCanvas.addEventListener("mouseup", (e) => {
+    if (isDragging) {
+      isDragging = false;
+      textCanvas.style.cursor = "crosshair";
+    }
+  });
+  textCanvas.addEventListener("mouseleave", () => {
+    if (isDragging) {
+      isDragging = false;
+      textCanvas.style.cursor = "crosshair";
+    }
+  });
+  textCanvas.addEventListener("click", (e) => {
+    if (!selectedTextId) {
+      const pos = getCanvasClickPosition(e, textCanvas);
       addTextItem(pos.x, pos.y);
     }
   });
@@ -697,7 +766,11 @@
   });
   textFontSelect.addEventListener("change", () => {
     if (selectedTextId) {
-      updateTextItem(selectedTextId, { fontFamily: textFontSelect.value });
+      const fontFamily = textFontSelect.value;
+      updateTextItem(selectedTextId, { fontFamily });
+      document.fonts.load(`16px "${fontFamily}"`).then(() => {
+        renderTextOverlay();
+      });
     }
   });
   textSizeInput.addEventListener("input", () => {
@@ -763,19 +836,99 @@
       updateTextItem(selectedTextId, { outlineColor: textOutlineColorInput.value });
     }
   });
+  textShadowCheckbox.addEventListener("change", () => {
+    if (selectedTextId) {
+      updateTextItem(selectedTextId, { shadow: textShadowCheckbox.checked });
+    }
+  });
+  textShadowXInput.addEventListener("input", () => {
+    if (selectedTextId) {
+      updateTextItem(selectedTextId, { shadowX: parseInt(textShadowXInput.value) || 0 });
+    }
+  });
+  textShadowYInput.addEventListener("input", () => {
+    if (selectedTextId) {
+      updateTextItem(selectedTextId, { shadowY: parseInt(textShadowYInput.value) || 0 });
+    }
+  });
+  textShadowBlurInput.addEventListener("input", () => {
+    if (selectedTextId) {
+      updateTextItem(selectedTextId, { shadowBlur: parseInt(textShadowBlurInput.value) || 0 });
+    }
+  });
+  textShadowColorInput.addEventListener("input", () => {
+    if (selectedTextId) {
+      updateTextItem(selectedTextId, { shadowColor: textShadowColorInput.value });
+    }
+  });
+  textShadowOpacityInput.addEventListener("input", () => {
+    if (selectedTextId) {
+      updateTextItem(selectedTextId, { shadowOpacity: parseInt(textShadowOpacityInput.value) || 0 });
+    }
+  });
   deleteTextBtn.addEventListener("click", () => {
     if (selectedTextId) {
       deleteTextItem(selectedTextId);
     }
   });
+  centerHBtn.addEventListener("click", () => {
+    if (selectedTextId && baseImageData) {
+      const item = textItems.find((i) => i.id === selectedTextId);
+      if (item) {
+        const tempCanvas = document.createElement("canvas");
+        const tempCtx = tempCanvas.getContext("2d");
+        let fontStyle = "";
+        if (item.italic) fontStyle += "italic ";
+        if (item.bold) fontStyle += "bold ";
+        fontStyle += item.fontSize + "px ";
+        fontStyle += '"' + item.fontFamily + '"';
+        tempCtx.font = fontStyle;
+        const displayText = item.uppercase ? item.text.toUpperCase() : item.text;
+        const textWidth = tempCtx.measureText(displayText).width;
+        const textWidthPercent = textWidth / baseImageData.width * 100;
+        const centerX = 50 - textWidthPercent / 2;
+        updateTextItem(selectedTextId, { x: centerX });
+      }
+    }
+  });
+  centerVBtn.addEventListener("click", () => {
+    if (selectedTextId && baseImageData) {
+      const item = textItems.find((i) => i.id === selectedTextId);
+      if (item) {
+        const textHeightPercent = item.fontSize / baseImageData.height * 100;
+        const centerY = 50 - textHeightPercent / 2;
+        updateTextItem(selectedTextId, { y: centerY });
+      }
+    }
+  });
   outputNameInput.addEventListener("input", () => {
     outputNameFinalInput.value = outputNameInput.value;
+    textOutputNameInput.value = outputNameInput.value;
   });
   outputNameFinalInput.addEventListener("input", () => {
     outputNameInput.value = outputNameFinalInput.value;
+    textOutputNameInput.value = outputNameFinalInput.value;
     if (baseImageData) {
       const { filename } = getCurrentOutputData();
       outputFilename.textContent = filename;
+      textOutputFilename.textContent = filename;
     }
   });
+  textOutputNameInput.addEventListener("input", () => {
+    outputNameFinalInput.value = textOutputNameInput.value;
+    outputNameInput.value = textOutputNameInput.value;
+    if (baseImageData) {
+      const { filename } = getCurrentOutputData();
+      outputFilename.textContent = filename;
+      textOutputFilename.textContent = filename;
+    }
+  });
+  textDownloadBtn.addEventListener("click", () => {
+    const { dataUrl, filename } = getCurrentOutputData();
+    const link = document.createElement("a");
+    link.download = filename;
+    link.href = dataUrl;
+    link.click();
+  });
+  textPreviewBtn.addEventListener("click", updatePreviewWindow);
 })();

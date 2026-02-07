@@ -6,9 +6,7 @@
     <title>Sublogical Endeavors Imager</title>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="stylesheet" href="dist/output.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Courier+Prime&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="dist/fonts.css">
     <style>
         body { font-family: 'Courier Prime', monospace; }
         h1, h2, .label-text { font-family: 'Cinzel', serif; }
@@ -236,15 +234,178 @@
 
         <!-- Text Overlay View (hidden by default) -->
         <div id="text-overlay-view" class="hidden">
-            <div class="flex flex-col xl:flex-row gap-6 justify-center">
-                <!-- Large Canvas Container -->
-                <div class="flex-shrink-0">
+            <div class="flex flex-col xl:flex-row gap-4 justify-center mx-auto" style="max-width: 1400px;">
+                <!-- Left Column: Text Tools -->
+                <div class="w-full xl:w-96 flex-shrink-0 order-2 xl:order-1 xl:max-h-[calc(100vh-6rem)] xl:overflow-y-auto">
+                    <div class="panel p-5">
+                        <div class="absolute top-2 left-2 rivet"></div>
+                        <div class="absolute top-2 right-2 rivet"></div>
+                        <div class="absolute bottom-2 left-2 rivet"></div>
+                        <div class="absolute bottom-2 right-2 rivet"></div>
+
+                        <h2 class="label-text text-sm mb-2">Text Items</h2>
+                        <div id="text-items-list" class="space-y-1 mb-2 max-h-24 overflow-y-auto">
+                        </div>
+                        <button id="add-text-btn" class="btn-secondary w-full px-2 py-1 rounded cursor-pointer text-xs">
+                            + Add Text
+                        </button>
+
+                        <hr class="border-iron-light my-3">
+
+                        <div id="style-controls">
+                            <div id="no-selection-msg" class="text-iron-light text-xs text-center py-2">
+                                Select or add a text item
+                            </div>
+
+                            <div id="style-controls-inner" class="hidden space-y-2">
+                                <div>
+                                    <label class="label-text text-xs block mb-1">Text</label>
+                                    <input type="text" id="text-content" placeholder="Enter text..." class="input-field w-full px-2 py-1 rounded text-sm">
+                                </div>
+
+                                <div>
+                                    <label class="label-text text-xs block mb-1">Font</label>
+                                    <select id="text-font" class="input-field w-full px-2 py-1 rounded text-sm">
+                                        <optgroup label="Sans-Serif">
+                                            <option value="Arial">Arial</option>
+                                            <option value="Archivo">Archivo</option>
+                                            <option value="Exo 2">Exo 2</option>
+                                            <option value="Inter">Inter</option>
+                                            <option value="Lato">Lato</option>
+                                            <option value="Montserrat">Montserrat</option>
+                                            <option value="Nunito">Nunito</option>
+                                            <option value="Open Sans">Open Sans</option>
+                                            <option value="Poppins">Poppins</option>
+                                            <option value="Raleway">Raleway</option>
+                                            <option value="Roboto">Roboto</option>
+                                            <option value="Ubuntu">Ubuntu</option>
+                                            <option value="Verdana">Verdana</option>
+                                            <option value="Work Sans">Work Sans</option>
+                                        </optgroup>
+                                        <optgroup label="Serif">
+                                            <option value="Bitter">Bitter</option>
+                                            <option value="Cinzel">Cinzel</option>
+                                            <option value="Crimson Text">Crimson Text</option>
+                                            <option value="Georgia">Georgia</option>
+                                            <option value="Lora">Lora</option>
+                                            <option value="Merriweather">Merriweather</option>
+                                            <option value="Playfair Display">Playfair Display</option>
+                                            <option value="PT Serif">PT Serif</option>
+                                            <option value="Source Serif Pro">Source Serif Pro</option>
+                                            <option value="Times New Roman">Times New Roman</option>
+                                        </optgroup>
+                                        <optgroup label="Display">
+                                            <option value="Anton">Anton</option>
+                                            <option value="Bangers">Bangers</option>
+                                            <option value="Bebas Neue">Bebas Neue</option>
+                                            <option value="Fredoka">Fredoka</option>
+                                            <option value="Lobster">Lobster</option>
+                                            <option value="Orbitron">Orbitron</option>
+                                            <option value="Oswald">Oswald</option>
+                                            <option value="Permanent Marker">Permanent Marker</option>
+                                            <option value="Righteous">Righteous</option>
+                                            <option value="Staatliches">Staatliches</option>
+                                            <option value="Teko">Teko</option>
+                                        </optgroup>
+                                        <optgroup label="Handwriting">
+                                            <option value="Caveat">Caveat</option>
+                                            <option value="Comic Neue">Comic Neue</option>
+                                            <option value="Courgette">Courgette</option>
+                                            <option value="Dancing Script">Dancing Script</option>
+                                            <option value="Great Vibes">Great Vibes</option>
+                                            <option value="Indie Flower">Indie Flower</option>
+                                            <option value="Pacifico">Pacifico</option>
+                                            <option value="Satisfy">Satisfy</option>
+                                        </optgroup>
+                                        <optgroup label="Monospace">
+                                            <option value="Courier New">Courier New</option>
+                                            <option value="Courier Prime">Courier Prime</option>
+                                            <option value="Roboto Mono">Roboto Mono</option>
+                                            <option value="Source Code Pro">Source Code Pro</option>
+                                        </optgroup>
+                                    </select>
+                                </div>
+
+                                <div class="flex gap-2 items-end">
+                                    <div class="flex-1">
+                                        <label class="label-text text-xs block mb-1">Size</label>
+                                        <div class="flex items-center gap-1">
+                                            <input type="number" id="text-size" value="48" min="8" max="500" class="input-field w-14 px-1 py-1 rounded text-sm">
+                                            <span class="muted-text text-xs">px</span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="label-text text-xs block mb-1">Color</label>
+                                        <input type="color" id="text-color" value="#ffffff" class="input-field w-8 h-7 rounded cursor-pointer">
+                                    </div>
+                                    <div class="flex gap-1">
+                                        <button id="toggle-bold" class="style-toggle rounded font-bold text-xs">B</button>
+                                        <button id="toggle-italic" class="style-toggle rounded italic text-xs">I</button>
+                                        <button id="toggle-underline" class="style-toggle rounded underline text-xs">U</button>
+                                        <button id="toggle-uppercase" class="style-toggle rounded text-xs">AA</button>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="label-text text-xs block mb-1">Opacity</label>
+                                    <div class="flex items-center gap-2">
+                                        <input type="range" id="text-opacity" min="0" max="100" value="100" class="flex-1 accent-brass cursor-pointer">
+                                        <span id="text-opacity-value" class="body-text text-xs w-8">100%</span>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="label-text text-xs block mb-1">Outline</label>
+                                    <div class="flex items-center gap-2">
+                                        <input type="checkbox" id="text-outline" class="accent-brass cursor-pointer">
+                                        <input type="color" id="text-outline-color" value="#000000" class="input-field w-8 h-6 rounded cursor-pointer">
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="label-text text-xs block mb-1">Drop Shadow</label>
+                                    <div class="space-y-1">
+                                        <div class="flex items-center gap-2">
+                                            <input type="checkbox" id="text-shadow" class="accent-brass cursor-pointer">
+                                            <input type="color" id="text-shadow-color" value="#000000" class="input-field w-8 h-6 p-0.5 rounded cursor-pointer">
+                                            <input type="number" id="text-shadow-opacity" value="80" min="0" max="100" class="input-field w-12 px-1 py-1 rounded text-xs">
+                                            <span class="muted-text text-xs">%</span>
+                                        </div>
+                                        <div class="flex gap-2">
+                                            <div class="flex items-center gap-0.5">
+                                                <span class="body-text text-xs">X:</span>
+                                                <input type="number" id="text-shadow-x" value="3" min="-50" max="50" class="input-field w-10 px-1 py-1 rounded text-xs">
+                                            </div>
+                                            <div class="flex items-center gap-0.5">
+                                                <span class="body-text text-xs">Y:</span>
+                                                <input type="number" id="text-shadow-y" value="3" min="-50" max="50" class="input-field w-10 px-1 py-1 rounded text-xs">
+                                            </div>
+                                            <div class="flex items-center gap-0.5">
+                                                <span class="body-text text-xs">B:</span>
+                                                <input type="number" id="text-shadow-blur" value="4" min="0" max="100" class="input-field w-10 px-1 py-1 rounded text-xs">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="flex gap-1">
+                                    <button id="center-h-btn" class="btn-secondary flex-1 px-1 py-1 rounded cursor-pointer text-xs" title="Center horizontally">↔ H</button>
+                                    <button id="center-v-btn" class="btn-secondary flex-1 px-1 py-1 rounded cursor-pointer text-xs" title="Center vertically">↕ V</button>
+                                    <button id="delete-text-btn" class="btn-secondary flex-1 px-1 py-1 rounded cursor-pointer text-xs">Delete</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Center Column: Canvas + Output -->
+                <div class="flex-1 min-w-0 order-1 xl:order-2" style="max-width: 1000px;">
                     <!-- Tab Bar for text overlay view -->
                     <div id="tab-bar-text" class="flex ml-4">
                         <button class="tab-btn tab-process-btn">Process</button>
                         <button class="tab-btn tab-text-btn active">Text Overlay</button>
                     </div>
-                    <div class="panel panel-tabbed p-6">
+                    <div class="panel panel-tabbed p-4">
                         <div class="absolute top-2 left-2 rivet"></div>
                         <div class="absolute top-2 right-2 rivet"></div>
                         <div class="absolute bottom-2 left-2 rivet"></div>
@@ -255,112 +416,22 @@
                                 <span class="text-iron-light text-sm">Click to add text</span>
                             </div>
                         </div>
-                    </div>
-                </div>
-
-                <!-- Side Panel -->
-                <div class="w-full xl:w-80 flex flex-col gap-6">
-                    <!-- Text Items List -->
-                    <div class="panel p-6">
-                        <div class="absolute top-2 left-2 rivet"></div>
-                        <div class="absolute top-2 right-2 rivet"></div>
-                        <div class="absolute bottom-2 left-2 rivet"></div>
-                        <div class="absolute bottom-2 right-2 rivet"></div>
-
-                        <h2 class="label-text text-lg mb-4">Text Items</h2>
-                        <div id="text-items-list" class="space-y-2 mb-4 max-h-40 overflow-y-auto">
-                            <!-- Text item chips will be rendered here -->
-                        </div>
-                        <button id="add-text-btn" class="btn-secondary w-full px-4 py-2 rounded cursor-pointer text-sm">
-                            + Add Text
-                        </button>
-                    </div>
-
-                    <!-- Style Controls -->
-                    <div class="panel p-6">
-                        <div class="absolute top-2 left-2 rivet"></div>
-                        <div class="absolute top-2 right-2 rivet"></div>
-                        <div class="absolute bottom-2 left-2 rivet"></div>
-                        <div class="absolute bottom-2 right-2 rivet"></div>
-
-                        <h2 class="label-text text-lg mb-4">Style Controls</h2>
-                        <div id="style-controls" class="space-y-4">
-                            <div id="no-selection-msg" class="text-iron-light text-sm text-center py-4">
-                                Select or add a text item to edit
-                            </div>
-
-                            <div id="style-controls-inner" class="hidden space-y-4">
-                                <div>
-                                    <label class="label-text block mb-2">Text</label>
-                                    <input type="text" id="text-content" placeholder="Enter text..." class="input-field w-full px-3 py-2 rounded">
+                        <!-- Output bar below canvas -->
+                        <div id="text-output-bar" class="hidden mt-3 pt-3 border-t border-iron-light">
+                            <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
+                                <div class="text-sm body-text flex gap-4 flex-wrap">
+                                    <span><span class="text-brass">File:</span> <span id="text-output-filename"></span></span>
+                                    <span><span class="text-brass">Dims:</span> <span id="text-output-dimensions"></span></span>
+                                    <span><span class="text-brass">Size:</span> <span id="text-output-filesize"></span></span>
                                 </div>
-
-                                <div>
-                                    <label class="label-text block mb-2">Font</label>
-                                    <select id="text-font" class="input-field w-full px-3 py-2 rounded">
-                                        <option value="Arial">Arial</option>
-                                        <option value="Georgia">Georgia</option>
-                                        <option value="Courier New">Courier New</option>
-                                        <option value="Times New Roman">Times New Roman</option>
-                                        <option value="Verdana">Verdana</option>
-                                    </select>
+                                <div class="flex items-center gap-2 ml-auto">
+                                    <input type="text" id="text-output-name" placeholder="Filename" class="input-field px-2 py-1 rounded text-sm w-36">
+                                    <button id="text-download-btn" class="btn-primary px-4 py-1 rounded cursor-pointer text-sm">⚙ Download</button>
+                                    <button id="text-preview-btn" class="btn-secondary px-3 py-1 rounded cursor-pointer text-sm" title="Open full size in new window">⧉</button>
                                 </div>
-
-                                <div class="flex gap-4">
-                                    <div class="flex-1">
-                                        <label class="label-text block mb-2">Size</label>
-                                        <div class="flex items-center gap-2">
-                                            <input type="number" id="text-size" value="48" min="8" max="500" class="input-field w-20 px-2 py-2 rounded">
-                                            <span class="muted-text">px</span>
-                                        </div>
-                                    </div>
-                                    <div class="flex-1">
-                                        <label class="label-text block mb-2">Color</label>
-                                        <input type="color" id="text-color" value="#ffffff" class="input-field w-full h-10 rounded cursor-pointer">
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label class="label-text block mb-2">Opacity</label>
-                                    <div class="flex items-center gap-3">
-                                        <input type="range" id="text-opacity" min="0" max="100" value="100" class="flex-1 accent-brass cursor-pointer">
-                                        <span id="text-opacity-value" class="body-text text-sm w-12">100%</span>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label class="label-text block mb-2">Style</label>
-                                    <div class="flex gap-2">
-                                        <button id="toggle-bold" class="style-toggle rounded font-bold">B</button>
-                                        <button id="toggle-italic" class="style-toggle rounded italic">I</button>
-                                        <button id="toggle-underline" class="style-toggle rounded underline">U</button>
-                                        <button id="toggle-uppercase" class="style-toggle rounded text-xs">AA</button>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label class="label-text block mb-2">Outline</label>
-                                    <div class="flex items-center gap-4">
-                                        <label class="flex items-center gap-2 cursor-pointer body-text text-sm">
-                                            <input type="checkbox" id="text-outline" class="accent-brass cursor-pointer">
-                                            <span>Enable</span>
-                                        </label>
-                                        <div class="flex items-center gap-2">
-                                            <span class="body-text text-sm">Color:</span>
-                                            <input type="color" id="text-outline-color" value="#000000" class="input-field w-12 h-8 rounded cursor-pointer">
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <button id="delete-text-btn" class="btn-secondary w-full px-4 py-2 rounded cursor-pointer text-sm mt-4">
-                                    Delete Text
-                                </button>
                             </div>
                         </div>
                     </div>
-
-                    <!-- Placeholder for output container when in text overlay view -->
-                    <div id="output-container-placeholder"></div>
                 </div>
             </div>
         </div>

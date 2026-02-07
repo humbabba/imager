@@ -81,6 +81,15 @@ const sourceFilesizeEl = document.getElementById('source-filesize');
 const outputFilesizeEl = document.getElementById('output-filesize');
 const ctx = canvas.getContext('2d');
 
+// Text overlay output bar elements
+const textOutputBar = document.getElementById('text-output-bar');
+const textOutputFilename = document.getElementById('text-output-filename');
+const textOutputDimensions = document.getElementById('text-output-dimensions');
+const textOutputFilesize = document.getElementById('text-output-filesize');
+const textOutputNameInput = document.getElementById('text-output-name');
+const textDownloadBtn = document.getElementById('text-download-btn');
+const textPreviewBtn = document.getElementById('text-preview-btn');
+
 function formatFilesize(bytes) {
     if (bytes < 1024) return bytes + ' B';
     if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
@@ -417,8 +426,9 @@ processBtn.addEventListener('click', () => {
     canvas.dataset.width = targetWidth;
     canvas.dataset.height = targetHeight;
 
-    // Update text overlay filename field with the name used for processing
+    // Update filename fields with the name used for processing
     outputNameFinalInput.value = baseName;
+    textOutputNameInput.value = baseName;
 
     // Clear output name if not keeping
     if (!keepNameCheckbox.checked) {
@@ -543,12 +553,21 @@ const toggleUnderlineBtn = document.getElementById('toggle-underline');
 const toggleUppercaseBtn = document.getElementById('toggle-uppercase');
 const textOutlineCheckbox = document.getElementById('text-outline');
 const textOutlineColorInput = document.getElementById('text-outline-color');
+const textShadowCheckbox = document.getElementById('text-shadow');
+const textShadowXInput = document.getElementById('text-shadow-x');
+const textShadowYInput = document.getElementById('text-shadow-y');
+const textShadowBlurInput = document.getElementById('text-shadow-blur');
+const textShadowColorInput = document.getElementById('text-shadow-color');
+const textShadowOpacityInput = document.getElementById('text-shadow-opacity');
 const deleteTextBtn = document.getElementById('delete-text-btn');
+const centerHBtn = document.getElementById('center-h-btn');
+const centerVBtn = document.getElementById('center-v-btn');
 
 // Data model
 let textItems = [];
 let selectedTextId = null;
 let baseImageData = null; // Stores the processed image data
+let isDragging = false;
 let lastTextStyle = {
     fontFamily: 'Arial',
     fontSize: 48,
@@ -559,7 +578,13 @@ let lastTextStyle = {
     underline: false,
     uppercase: false,
     outline: false,
-    outlineColor: '#000000'
+    outlineColor: '#000000',
+    shadow: false,
+    shadowX: 3,
+    shadowY: 3,
+    shadowBlur: 4,
+    shadowColor: '#000000',
+    shadowOpacity: 80
 };
 
 // Generate unique ID
@@ -583,7 +608,13 @@ function createDefaultTextItem(x, y) {
         underline: lastTextStyle.underline,
         uppercase: lastTextStyle.uppercase,
         outline: lastTextStyle.outline,
-        outlineColor: lastTextStyle.outlineColor
+        outlineColor: lastTextStyle.outlineColor,
+        shadow: lastTextStyle.shadow,
+        shadowX: lastTextStyle.shadowX,
+        shadowY: lastTextStyle.shadowY,
+        shadowBlur: lastTextStyle.shadowBlur,
+        shadowColor: lastTextStyle.shadowColor,
+        shadowOpacity: lastTextStyle.shadowOpacity
     };
 }
 
@@ -607,10 +638,13 @@ function updateOutputPane() {
     // Estimate filesize
     const outputBytes = Math.round((dataUrl.length - `data:${outputMimeType};base64,`.length) * 0.75);
     outputFilesizeEl.textContent = formatFilesize(outputBytes);
-}
 
-// Output container placeholder for text overlay view
-const outputContainerPlaceholder = document.getElementById('output-container-placeholder');
+    // Update text overlay output bar too
+    textOutputFilename.textContent = filename;
+    textOutputDimensions.textContent = `${width} × ${height} px`;
+    textOutputFilesize.textContent = formatFilesize(outputBytes);
+    textOutputBar.classList.remove('hidden');
+}
 
 // Tab switching
 function switchToTab(tabName) {
@@ -627,18 +661,9 @@ function switchToTab(tabName) {
     if (tabName === 'process') {
         processView.classList.remove('hidden');
         textOverlayView.classList.add('hidden');
-        // Move output container back to process view
-        processView.appendChild(outputContainer);
-        outputContainer.className = 'hidden order-2 w-full xl:absolute xl:top-0 xl:left-[calc(50%+19.5rem)] xl:w-80';
-        if (baseImageData) {
-            outputContainer.classList.remove('hidden');
-        }
     } else if (tabName === 'text') {
         processView.classList.add('hidden');
         textOverlayView.classList.remove('hidden');
-        // Move output container to text overlay side panel
-        outputContainerPlaceholder.appendChild(outputContainer);
-        outputContainer.className = 'w-full';
         renderTextOverlay();
     }
 
@@ -659,11 +684,15 @@ document.querySelectorAll('.tab-text-btn').forEach(btn => {
 // Show text overlay tab after processing
 function showTextOverlayTab() {
     tabBar.classList.remove('hidden');
-    // Store the base image data
+    // Store the base image data and pre-load the image for fast rendering
+    const dataUrl = canvas.toDataURL();
+    const img = new Image();
+    img.src = dataUrl;
     baseImageData = {
         width: canvas.width,
         height: canvas.height,
-        dataUrl: canvas.toDataURL()
+        dataUrl: dataUrl,
+        image: img
     };
 }
 
@@ -697,7 +726,7 @@ function updateTextItem(id, updates) {
     if (item) {
         Object.assign(item, updates);
         // Save style settings (excluding position and text content)
-        const styleKeys = ['fontFamily', 'fontSize', 'color', 'opacity', 'bold', 'italic', 'underline', 'uppercase', 'outline', 'outlineColor'];
+        const styleKeys = ['fontFamily', 'fontSize', 'color', 'opacity', 'bold', 'italic', 'underline', 'uppercase', 'outline', 'outlineColor', 'shadow', 'shadowX', 'shadowY', 'shadowBlur', 'shadowColor', 'shadowOpacity'];
         styleKeys.forEach(key => {
             if (key in item) {
                 lastTextStyle[key] = item[key];
@@ -729,7 +758,7 @@ function selectTextItem(id) {
     // Save style from selected item
     const item = textItems.find(i => i.id === id);
     if (item) {
-        const styleKeys = ['fontFamily', 'fontSize', 'color', 'opacity', 'bold', 'italic', 'underline', 'uppercase', 'outline', 'outlineColor'];
+        const styleKeys = ['fontFamily', 'fontSize', 'color', 'opacity', 'bold', 'italic', 'underline', 'uppercase', 'outline', 'outlineColor', 'shadow', 'shadowX', 'shadowY', 'shadowBlur', 'shadowColor', 'shadowOpacity'];
         styleKeys.forEach(key => {
             if (key in item) {
                 lastTextStyle[key] = item[key];
@@ -768,6 +797,12 @@ function updateStyleControls() {
         toggleUppercaseBtn.classList.toggle('active', item.uppercase);
         textOutlineCheckbox.checked = item.outline;
         textOutlineColorInput.value = item.outlineColor;
+        textShadowCheckbox.checked = item.shadow;
+        textShadowXInput.value = item.shadowX;
+        textShadowYInput.value = item.shadowY;
+        textShadowBlurInput.value = item.shadowBlur;
+        textShadowColorInput.value = item.shadowColor;
+        textShadowOpacityInput.value = item.shadowOpacity;
     } else {
         noSelectionMsg.classList.remove('hidden');
         styleControlsInner.classList.add('hidden');
@@ -825,6 +860,18 @@ function drawTextItem(ctx, item, canvasWidth, canvasHeight) {
     // Apply uppercase transform if enabled
     const displayText = item.uppercase ? item.text.toUpperCase() : item.text;
 
+    // Apply drop shadow if enabled
+    if (item.shadow) {
+        const r = parseInt(item.shadowColor.slice(1, 3), 16);
+        const g = parseInt(item.shadowColor.slice(3, 5), 16);
+        const b = parseInt(item.shadowColor.slice(5, 7), 16);
+        const a = item.shadowOpacity / 100;
+        ctx.shadowColor = `rgba(${r}, ${g}, ${b}, ${a})`;
+        ctx.shadowOffsetX = item.shadowX;
+        ctx.shadowOffsetY = item.shadowY;
+        ctx.shadowBlur = item.shadowBlur;
+    }
+
     // Draw outline if enabled
     if (item.outline) {
         ctx.strokeStyle = item.outlineColor;
@@ -836,6 +883,12 @@ function drawTextItem(ctx, item, canvasWidth, canvasHeight) {
     // Draw fill
     ctx.fillStyle = item.color;
     ctx.fillText(displayText, x, y);
+
+    // Reset shadow
+    ctx.shadowColor = 'transparent';
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+    ctx.shadowBlur = 0;
 
     // Draw underline if enabled
     if (item.underline) {
@@ -856,38 +909,61 @@ function drawTextItem(ctx, item, canvasWidth, canvasHeight) {
 
 // Render the text overlay canvas
 function renderTextOverlay() {
-    if (!baseImageData) return;
+    if (!baseImageData || !baseImageData.image) return;
 
-    // Set canvas dimensions
-    textCanvas.width = baseImageData.width;
-    textCanvas.height = baseImageData.height;
+    // Only set canvas dimensions if they changed (avoids clearing)
+    if (textCanvas.width !== baseImageData.width || textCanvas.height !== baseImageData.height) {
+        textCanvas.width = baseImageData.width;
+        textCanvas.height = baseImageData.height;
+    }
 
-    // Draw base image
-    const img = new Image();
-    img.onload = () => {
-        textCtx.drawImage(img, 0, 0);
+    // Draw base image synchronously from cached image
+    textCtx.drawImage(baseImageData.image, 0, 0);
 
-        // Draw all text items
-        textItems.forEach(item => {
-            drawTextItem(textCtx, item, textCanvas.width, textCanvas.height);
-        });
+    // Draw all text items
+    textItems.forEach(item => {
+        drawTextItem(textCtx, item, textCanvas.width, textCanvas.height);
+    });
 
-        // Update output pane if on text tab
-        if (currentTab === 'text') {
-            updateOutputPane();
-        }
-    };
-    img.src = baseImageData.dataUrl;
+    // Update output pane if on text tab
+    if (currentTab === 'text') {
+        updateOutputPane();
+    }
 }
 
-// Canvas click handler
-textCanvas.addEventListener('click', (e) => {
-    const pos = getCanvasClickPosition(e, textCanvas);
+// Canvas drag handlers for repositioning text
+textCanvas.addEventListener('mousedown', (e) => {
     if (selectedTextId) {
-        // Move selected item to click position
+        isDragging = true;
+        textCanvas.style.cursor = 'grabbing';
+    }
+});
+
+textCanvas.addEventListener('mousemove', (e) => {
+    if (isDragging && selectedTextId) {
+        const pos = getCanvasClickPosition(e, textCanvas);
         updateTextItem(selectedTextId, { x: pos.x, y: pos.y });
-    } else {
-        // No selection - add new item
+    }
+});
+
+textCanvas.addEventListener('mouseup', (e) => {
+    if (isDragging) {
+        isDragging = false;
+        textCanvas.style.cursor = 'crosshair';
+    }
+});
+
+textCanvas.addEventListener('mouseleave', () => {
+    if (isDragging) {
+        isDragging = false;
+        textCanvas.style.cursor = 'crosshair';
+    }
+});
+
+// Canvas click handler (for adding new text when no selection)
+textCanvas.addEventListener('click', (e) => {
+    if (!selectedTextId) {
+        const pos = getCanvasClickPosition(e, textCanvas);
         addTextItem(pos.x, pos.y);
     }
 });
@@ -907,7 +983,11 @@ textContentInput.addEventListener('input', () => {
 
 textFontSelect.addEventListener('change', () => {
     if (selectedTextId) {
-        updateTextItem(selectedTextId, { fontFamily: textFontSelect.value });
+        const fontFamily = textFontSelect.value;
+        updateTextItem(selectedTextId, { fontFamily });
+        document.fonts.load(`16px "${fontFamily}"`).then(() => {
+            renderTextOverlay();
+        });
     }
 });
 
@@ -983,22 +1063,119 @@ textOutlineColorInput.addEventListener('input', () => {
     }
 });
 
+textShadowCheckbox.addEventListener('change', () => {
+    if (selectedTextId) {
+        updateTextItem(selectedTextId, { shadow: textShadowCheckbox.checked });
+    }
+});
+
+textShadowXInput.addEventListener('input', () => {
+    if (selectedTextId) {
+        updateTextItem(selectedTextId, { shadowX: parseInt(textShadowXInput.value) || 0 });
+    }
+});
+
+textShadowYInput.addEventListener('input', () => {
+    if (selectedTextId) {
+        updateTextItem(selectedTextId, { shadowY: parseInt(textShadowYInput.value) || 0 });
+    }
+});
+
+textShadowBlurInput.addEventListener('input', () => {
+    if (selectedTextId) {
+        updateTextItem(selectedTextId, { shadowBlur: parseInt(textShadowBlurInput.value) || 0 });
+    }
+});
+
+textShadowColorInput.addEventListener('input', () => {
+    if (selectedTextId) {
+        updateTextItem(selectedTextId, { shadowColor: textShadowColorInput.value });
+    }
+});
+
+textShadowOpacityInput.addEventListener('input', () => {
+    if (selectedTextId) {
+        updateTextItem(selectedTextId, { shadowOpacity: parseInt(textShadowOpacityInput.value) || 0 });
+    }
+});
+
 deleteTextBtn.addEventListener('click', () => {
     if (selectedTextId) {
         deleteTextItem(selectedTextId);
     }
 });
 
+// Center text horizontally
+centerHBtn.addEventListener('click', () => {
+    if (selectedTextId && baseImageData) {
+        const item = textItems.find(i => i.id === selectedTextId);
+        if (item) {
+            // Measure text width to center properly
+            const tempCanvas = document.createElement('canvas');
+            const tempCtx = tempCanvas.getContext('2d');
+            let fontStyle = '';
+            if (item.italic) fontStyle += 'italic ';
+            if (item.bold) fontStyle += 'bold ';
+            fontStyle += item.fontSize + 'px ';
+            fontStyle += '"' + item.fontFamily + '"';
+            tempCtx.font = fontStyle;
+            const displayText = item.uppercase ? item.text.toUpperCase() : item.text;
+            const textWidth = tempCtx.measureText(displayText).width;
+            const textWidthPercent = (textWidth / baseImageData.width) * 100;
+            const centerX = 50 - (textWidthPercent / 2);
+            updateTextItem(selectedTextId, { x: centerX });
+        }
+    }
+});
+
+// Center text vertically
+centerVBtn.addEventListener('click', () => {
+    if (selectedTextId && baseImageData) {
+        const item = textItems.find(i => i.id === selectedTextId);
+        if (item) {
+            // Use font size to estimate text height
+            const textHeightPercent = (item.fontSize / baseImageData.height) * 100;
+            const centerY = 50 - (textHeightPercent / 2);
+            updateTextItem(selectedTextId, { y: centerY });
+        }
+    }
+});
+
 // Sync filename fields between process tab and output pane
 outputNameInput.addEventListener('input', () => {
     outputNameFinalInput.value = outputNameInput.value;
+    textOutputNameInput.value = outputNameInput.value;
 });
 
 outputNameFinalInput.addEventListener('input', () => {
     outputNameInput.value = outputNameFinalInput.value;
+    textOutputNameInput.value = outputNameFinalInput.value;
     // Update displayed filename
     if (baseImageData) {
         const { filename } = getCurrentOutputData();
         outputFilename.textContent = filename;
+        textOutputFilename.textContent = filename;
     }
 });
+
+// Sync text output name back to the main fields
+textOutputNameInput.addEventListener('input', () => {
+    outputNameFinalInput.value = textOutputNameInput.value;
+    outputNameInput.value = textOutputNameInput.value;
+    if (baseImageData) {
+        const { filename } = getCurrentOutputData();
+        outputFilename.textContent = filename;
+        textOutputFilename.textContent = filename;
+    }
+});
+
+// Text overlay download and preview
+textDownloadBtn.addEventListener('click', () => {
+    const { dataUrl, filename } = getCurrentOutputData();
+    const link = document.createElement('a');
+    link.download = filename;
+    link.href = dataUrl;
+    link.click();
+});
+
+textPreviewBtn.addEventListener('click', updatePreviewWindow);
