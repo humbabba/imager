@@ -1,6 +1,7 @@
 const fileInput = document.getElementById('image-upload');
 const processBtn = document.getElementById('process-btn');
 const downloadBtn = document.getElementById('download-btn');
+const previewBtn = document.getElementById('preview-btn');
 const outputNameInput = document.getElementById('output-name');
 const keepNameCheckbox = document.getElementById('keep-name');
 const addTimestampCheckbox = document.getElementById('add-timestamp');
@@ -11,7 +12,11 @@ const cropPositionSelect = document.getElementById('crop-position');
 const cropPositionContainer = document.getElementById('crop-position-container');
 const overlayOptionsContainer = document.getElementById('overlay-options-container');
 const overlayMarginInput = document.getElementById('overlay-margin');
-const overlayShadowInput = document.getElementById('overlay-shadow');
+const shadowOffsetXInput = document.getElementById('shadow-offset-x');
+const shadowOffsetYInput = document.getElementById('shadow-offset-y');
+const shadowBlurInput = document.getElementById('shadow-blur');
+const shadowColorInput = document.getElementById('shadow-color');
+const shadowOpacityInput = document.getElementById('shadow-opacity');
 const qualityContainer = document.getElementById('quality-container');
 const jpgQualityInput = document.getElementById('jpg-quality');
 const forceJpgCheckbox = document.getElementById('force-jpg');
@@ -305,10 +310,21 @@ processBtn.addEventListener('click', () => {
         const imgRatio = uploadedImage.width / uploadedImage.height;
         const canvasRatio = targetWidth / targetHeight;
         const marginPercent = parseFloat(overlayMarginInput.value) || 0;
-        const shadowPercent = parseFloat(overlayShadowInput.value) || 0;
         const smallerDimension = Math.min(targetWidth, targetHeight);
         const margin = (marginPercent / 100) * smallerDimension;
-        const shadowRadius = (shadowPercent / 100) * smallerDimension;
+
+        // Shadow settings
+        const shadowOffsetX = parseFloat(shadowOffsetXInput.value) || 0;
+        const shadowOffsetY = parseFloat(shadowOffsetYInput.value) || 0;
+        const shadowBlur = parseFloat(shadowBlurInput.value) || 0;
+        const shadowColorHex = shadowColorInput.value || '#000000';
+        const shadowOpacity = (parseFloat(shadowOpacityInput.value) || 0) / 100;
+
+        // Convert hex color to rgba
+        const r = parseInt(shadowColorHex.slice(1, 3), 16);
+        const g = parseInt(shadowColorHex.slice(3, 5), 16);
+        const b = parseInt(shadowColorHex.slice(5, 7), 16);
+        const shadowColor = `rgba(${r}, ${g}, ${b}, ${shadowOpacity})`;
 
         // Draw blurred background (cover mode - fills entire canvas)
         let bgWidth, bgHeight, bgX, bgY;
@@ -346,12 +362,12 @@ processBtn.addEventListener('click', () => {
         const drawX = (targetWidth - drawWidth) / 2;
         const drawY = (targetHeight - drawHeight) / 2;
 
-        // Apply drop shadow if specified (darker and harder)
-        if (shadowRadius > 0) {
-            ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
-            ctx.shadowBlur = shadowRadius * 0.5;
-            ctx.shadowOffsetX = shadowRadius * 0.3;
-            ctx.shadowOffsetY = shadowRadius * 0.3;
+        // Apply drop shadow if any shadow property is set
+        if (shadowBlur > 0 || shadowOffsetX !== 0 || shadowOffsetY !== 0) {
+            ctx.shadowColor = shadowColor;
+            ctx.shadowBlur = shadowBlur;
+            ctx.shadowOffsetX = shadowOffsetX;
+            ctx.shadowOffsetY = shadowOffsetY;
         }
 
         // Draw sharp foreground image
@@ -360,6 +376,8 @@ processBtn.addEventListener('click', () => {
         // Reset shadow
         ctx.shadowColor = 'transparent';
         ctx.shadowBlur = 0;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 0;
     } else {
         // Crop mode or no aspect ratio
         ctx.drawImage(
@@ -403,6 +421,11 @@ processBtn.addEventListener('click', () => {
 
     outputContainer.classList.remove('hidden');
 
+    // Auto-update preview window if open
+    if (previewWindow && !previewWindow.closed) {
+        updatePreviewWindow();
+    }
+
     // Show text overlay tab
     showTextOverlayTab();
 });
@@ -413,6 +436,39 @@ downloadBtn.addEventListener('click', () => {
     link.href = canvas.dataset.dataUrl;
     link.click();
 });
+
+// Preview window (named window that persists and updates)
+let previewWindow = null;
+
+function updatePreviewWindow() {
+    if (!previewWindow || previewWindow.closed) {
+        previewWindow = window.open('', 'imager-preview', 'menubar=no,toolbar=no,location=no,status=no');
+    }
+
+    const dataUrl = canvas.dataset.dataUrl;
+    const filename = canvas.dataset.filename || 'preview';
+
+    previewWindow.document.open();
+    previewWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>${filename}</title>
+            <style>
+                body { margin: 0; background: #1a1a1a; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+                img { max-width: 100%; height: auto; }
+            </style>
+        </head>
+        <body>
+            <img src="${dataUrl}" alt="${filename}">
+        </body>
+        </html>
+    `);
+    previewWindow.document.close();
+    previewWindow.focus();
+}
+
+previewBtn.addEventListener('click', updatePreviewWindow);
 
 // ============================================================
 // Text Overlay Feature

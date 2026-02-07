@@ -3,6 +3,7 @@
   var fileInput = document.getElementById("image-upload");
   var processBtn = document.getElementById("process-btn");
   var downloadBtn = document.getElementById("download-btn");
+  var previewBtn = document.getElementById("preview-btn");
   var outputNameInput = document.getElementById("output-name");
   var keepNameCheckbox = document.getElementById("keep-name");
   var addTimestampCheckbox = document.getElementById("add-timestamp");
@@ -13,7 +14,11 @@
   var cropPositionContainer = document.getElementById("crop-position-container");
   var overlayOptionsContainer = document.getElementById("overlay-options-container");
   var overlayMarginInput = document.getElementById("overlay-margin");
-  var overlayShadowInput = document.getElementById("overlay-shadow");
+  var shadowOffsetXInput = document.getElementById("shadow-offset-x");
+  var shadowOffsetYInput = document.getElementById("shadow-offset-y");
+  var shadowBlurInput = document.getElementById("shadow-blur");
+  var shadowColorInput = document.getElementById("shadow-color");
+  var shadowOpacityInput = document.getElementById("shadow-opacity");
   var qualityContainer = document.getElementById("quality-container");
   var jpgQualityInput = document.getElementById("jpg-quality");
   var forceJpgCheckbox = document.getElementById("force-jpg");
@@ -237,10 +242,17 @@
       const imgRatio = uploadedImage.width / uploadedImage.height;
       const canvasRatio = targetWidth / targetHeight;
       const marginPercent = parseFloat(overlayMarginInput.value) || 0;
-      const shadowPercent = parseFloat(overlayShadowInput.value) || 0;
       const smallerDimension = Math.min(targetWidth, targetHeight);
       const margin = marginPercent / 100 * smallerDimension;
-      const shadowRadius = shadowPercent / 100 * smallerDimension;
+      const shadowOffsetX = parseFloat(shadowOffsetXInput.value) || 0;
+      const shadowOffsetY = parseFloat(shadowOffsetYInput.value) || 0;
+      const shadowBlur = parseFloat(shadowBlurInput.value) || 0;
+      const shadowColorHex = shadowColorInput.value || "#000000";
+      const shadowOpacity = (parseFloat(shadowOpacityInput.value) || 0) / 100;
+      const r = parseInt(shadowColorHex.slice(1, 3), 16);
+      const g = parseInt(shadowColorHex.slice(3, 5), 16);
+      const b = parseInt(shadowColorHex.slice(5, 7), 16);
+      const shadowColor = `rgba(${r}, ${g}, ${b}, ${shadowOpacity})`;
       let bgWidth, bgHeight, bgX, bgY;
       if (imgRatio > canvasRatio) {
         bgHeight = targetHeight;
@@ -268,15 +280,17 @@
       }
       const drawX = (targetWidth - drawWidth) / 2;
       const drawY = (targetHeight - drawHeight) / 2;
-      if (shadowRadius > 0) {
-        ctx.shadowColor = "rgba(0, 0, 0, 0.8)";
-        ctx.shadowBlur = shadowRadius * 0.5;
-        ctx.shadowOffsetX = shadowRadius * 0.3;
-        ctx.shadowOffsetY = shadowRadius * 0.3;
+      if (shadowBlur > 0 || shadowOffsetX !== 0 || shadowOffsetY !== 0) {
+        ctx.shadowColor = shadowColor;
+        ctx.shadowBlur = shadowBlur;
+        ctx.shadowOffsetX = shadowOffsetX;
+        ctx.shadowOffsetY = shadowOffsetY;
       }
       ctx.drawImage(uploadedImage, drawX, drawY, drawWidth, drawHeight);
       ctx.shadowColor = "transparent";
       ctx.shadowBlur = 0;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 0;
     } else {
       ctx.drawImage(
         uploadedImage,
@@ -315,6 +329,9 @@
       outputNameInput.value = "";
     }
     outputContainer.classList.remove("hidden");
+    if (previewWindow && !previewWindow.closed) {
+      updatePreviewWindow();
+    }
     showTextOverlayTab();
   });
   downloadBtn.addEventListener("click", () => {
@@ -323,6 +340,33 @@
     link.href = canvas.dataset.dataUrl;
     link.click();
   });
+  var previewWindow = null;
+  function updatePreviewWindow() {
+    if (!previewWindow || previewWindow.closed) {
+      previewWindow = window.open("", "imager-preview", "menubar=no,toolbar=no,location=no,status=no");
+    }
+    const dataUrl = canvas.dataset.dataUrl;
+    const filename = canvas.dataset.filename || "preview";
+    previewWindow.document.open();
+    previewWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>${filename}</title>
+            <style>
+                body { margin: 0; background: #1a1a1a; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+                img { max-width: 100%; height: auto; }
+            </style>
+        </head>
+        <body>
+            <img src="${dataUrl}" alt="${filename}">
+        </body>
+        </html>
+    `);
+    previewWindow.document.close();
+    previewWindow.focus();
+  }
+  previewBtn.addEventListener("click", updatePreviewWindow);
   var tabBar = document.getElementById("tab-bar");
   var tabBarText = document.getElementById("tab-bar-text");
   var processView = document.getElementById("process-view");
