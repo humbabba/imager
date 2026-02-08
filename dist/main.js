@@ -931,4 +931,206 @@
     link.click();
   });
   textPreviewBtn.addEventListener("click", updatePreviewWindow);
+  var SETTINGS_STORAGE_KEY = "imager-settings";
+  function gatherSettings() {
+    return {
+      // Process tab
+      kn: keepNameCheckbox.checked,
+      ts: addTimestampCheckbox.checked,
+      mw: maxWidthInput.value,
+      mh: maxHeightInput.value,
+      ar: aspectRatioSelect.value,
+      crw: customRatioW.value,
+      crh: customRatioH.value,
+      rm: document.querySelector('input[name="resize-mode"]:checked').value,
+      cp: cropPositionSelect.value,
+      om: overlayMarginInput.value,
+      sox: shadowOffsetXInput.value,
+      soy: shadowOffsetYInput.value,
+      sb: shadowBlurInput.value,
+      sc: shadowColorInput.value,
+      so: shadowOpacityInput.value,
+      fj: forceJpgCheckbox.checked,
+      jq: jpgQualityInput.value,
+      // Text style defaults
+      tf: lastTextStyle.fontFamily,
+      tsz: lastTextStyle.fontSize,
+      tc: lastTextStyle.color,
+      to: lastTextStyle.opacity,
+      tb: lastTextStyle.bold,
+      ti: lastTextStyle.italic,
+      tu: lastTextStyle.underline,
+      tuc: lastTextStyle.uppercase,
+      tol: lastTextStyle.outline,
+      toc: lastTextStyle.outlineColor,
+      tsh: lastTextStyle.shadow,
+      tsx: lastTextStyle.shadowX,
+      tsy: lastTextStyle.shadowY,
+      tsb: lastTextStyle.shadowBlur,
+      tsc: lastTextStyle.shadowColor,
+      tso: lastTextStyle.shadowOpacity
+    };
+  }
+  function applySettings(s) {
+    if (!s) return;
+    if ("kn" in s) keepNameCheckbox.checked = s.kn;
+    if ("ts" in s) addTimestampCheckbox.checked = s.ts;
+    if ("mw" in s) maxWidthInput.value = s.mw;
+    if ("mh" in s) maxHeightInput.value = s.mh;
+    if ("ar" in s) aspectRatioSelect.value = s.ar;
+    if ("crw" in s) customRatioW.value = s.crw;
+    if ("crh" in s) customRatioH.value = s.crh;
+    if ("rm" in s) {
+      document.querySelectorAll('input[name="resize-mode"]').forEach((r) => {
+        r.checked = r.value === s.rm;
+      });
+      updateResizeModeOptions();
+    }
+    if ("cp" in s) cropPositionSelect.value = s.cp;
+    if ("om" in s) overlayMarginInput.value = s.om;
+    if ("sox" in s) shadowOffsetXInput.value = s.sox;
+    if ("soy" in s) shadowOffsetYInput.value = s.soy;
+    if ("sb" in s) shadowBlurInput.value = s.sb;
+    if ("sc" in s) shadowColorInput.value = s.sc;
+    if ("so" in s) shadowOpacityInput.value = s.so;
+    if ("fj" in s) {
+      forceJpgCheckbox.checked = s.fj;
+      updateQualityVisibility();
+    }
+    if ("jq" in s) jpgQualityInput.value = s.jq;
+    if ("tf" in s) lastTextStyle.fontFamily = s.tf;
+    if ("tsz" in s) lastTextStyle.fontSize = s.tsz;
+    if ("tc" in s) lastTextStyle.color = s.tc;
+    if ("to" in s) lastTextStyle.opacity = s.to;
+    if ("tb" in s) lastTextStyle.bold = s.tb;
+    if ("ti" in s) lastTextStyle.italic = s.ti;
+    if ("tu" in s) lastTextStyle.underline = s.tu;
+    if ("tuc" in s) lastTextStyle.uppercase = s.tuc;
+    if ("tol" in s) lastTextStyle.outline = s.tol;
+    if ("toc" in s) lastTextStyle.outlineColor = s.toc;
+    if ("tsh" in s) lastTextStyle.shadow = s.tsh;
+    if ("tsx" in s) lastTextStyle.shadowX = s.tsx;
+    if ("tsy" in s) lastTextStyle.shadowY = s.tsy;
+    if ("tsb" in s) lastTextStyle.shadowBlur = s.tsb;
+    if ("tsc" in s) lastTextStyle.shadowColor = s.tsc;
+    if ("tso" in s) lastTextStyle.shadowOpacity = s.tso;
+  }
+  function saveToLocalStorage() {
+    try {
+      localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(gatherSettings()));
+    } catch (e) {
+    }
+  }
+  function loadFromLocalStorage() {
+    try {
+      const data = localStorage.getItem(SETTINGS_STORAGE_KEY);
+      return data ? JSON.parse(data) : null;
+    } catch (e) {
+      return null;
+    }
+  }
+  function generateSettingsUrl() {
+    const json = JSON.stringify(gatherSettings());
+    const encoded = btoa(json);
+    const url = new URL(window.location.href.split("?")[0].split("#")[0]);
+    url.searchParams.set("s", encoded);
+    return url.toString();
+  }
+  function loadFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    const encoded = params.get("s");
+    if (encoded) {
+      try {
+        return JSON.parse(atob(encoded));
+      } catch (e) {
+        return null;
+      }
+    }
+    return null;
+  }
+  [
+    "keep-name",
+    "add-timestamp",
+    "max-width",
+    "max-height",
+    "aspect-ratio",
+    "custom-ratio-w",
+    "custom-ratio-h",
+    "crop-position",
+    "overlay-margin",
+    "shadow-offset-x",
+    "shadow-offset-y",
+    "shadow-blur",
+    "shadow-color",
+    "shadow-opacity",
+    "force-jpg",
+    "jpg-quality",
+    "text-font",
+    "text-size",
+    "text-color",
+    "text-opacity",
+    "text-outline",
+    "text-outline-color",
+    "text-shadow",
+    "text-shadow-x",
+    "text-shadow-y",
+    "text-shadow-blur",
+    "text-shadow-color",
+    "text-shadow-opacity"
+  ].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener("input", saveToLocalStorage);
+      el.addEventListener("change", saveToLocalStorage);
+    }
+  });
+  resizeModeInputs.forEach((input) => {
+    input.addEventListener("change", saveToLocalStorage);
+  });
+  [toggleBoldBtn, toggleItalicBtn, toggleUnderlineBtn, toggleUppercaseBtn].forEach((btn) => {
+    btn.addEventListener("click", () => {
+      setTimeout(saveToLocalStorage, 0);
+    });
+  });
+  var copySettingsBtn = document.getElementById("copy-settings-btn");
+  if (copySettingsBtn) {
+    copySettingsBtn.addEventListener("click", () => {
+      const url = generateSettingsUrl();
+      const showCopied = () => {
+        copySettingsBtn.textContent = "Copied!";
+        setTimeout(() => {
+          copySettingsBtn.textContent = "\u2699 Copy Settings Link";
+        }, 2e3);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(showCopied).catch(fallbackCopy);
+      } else {
+        fallbackCopy();
+      }
+      function fallbackCopy() {
+        const tmp = document.createElement("textarea");
+        tmp.value = url;
+        tmp.style.position = "fixed";
+        tmp.style.opacity = "0";
+        document.body.appendChild(tmp);
+        tmp.select();
+        document.execCommand("copy");
+        document.body.removeChild(tmp);
+        showCopied();
+      }
+    });
+  }
+  (function initSettings() {
+    const urlSettings = loadFromUrl();
+    if (urlSettings) {
+      applySettings(urlSettings);
+      saveToLocalStorage();
+      window.history.replaceState({}, "", window.location.pathname);
+    } else {
+      const stored = loadFromLocalStorage();
+      if (stored) {
+        applySettings(stored);
+      }
+    }
+  })();
 })();
