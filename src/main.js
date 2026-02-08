@@ -3,7 +3,6 @@ const processBtn = document.getElementById('process-btn');
 const downloadBtn = document.getElementById('download-btn');
 const previewBtn = document.getElementById('preview-btn');
 const outputNameInput = document.getElementById('output-name');
-const outputNameFinalInput = document.getElementById('output-name-final');
 const keepNameCheckbox = document.getElementById('keep-name');
 const addTimestampCheckbox = document.getElementById('add-timestamp');
 const maxWidthInput = document.getElementById('max-width');
@@ -205,8 +204,8 @@ fileInput.addEventListener('change', (e) => {
         sourceFileName = nameParts.join('.');
         sourceMimeType = file.type || 'image/png';
 
-        // Populate output name if blank
-        if (!outputNameInput.value.trim()) {
+        // Populate output name: always if "Keep name" is off, only if blank otherwise
+        if (!keepNameCheckbox.checked || !outputNameInput.value.trim()) {
             outputNameInput.value = sourceFileName;
         }
 
@@ -426,14 +425,8 @@ processBtn.addEventListener('click', () => {
     canvas.dataset.width = targetWidth;
     canvas.dataset.height = targetHeight;
 
-    // Update filename fields with the name used for processing
-    outputNameFinalInput.value = baseName;
+    // Sync filename to text overlay tab
     textOutputNameInput.value = baseName;
-
-    // Clear output name if not keeping
-    if (!keepNameCheckbox.checked) {
-        outputNameInput.value = '';
-    }
 
     outputContainer.classList.remove('hidden');
 
@@ -456,7 +449,7 @@ function getCurrentOutputData() {
     const isOutputJpg = outputMimeType === 'image/jpeg';
     const quality = isOutputJpg ? (parseInt(jpgQualityInput.value) || 80) / 100 : 1;
     const extension = getExtensionFromMime(outputMimeType);
-    const baseName = outputNameFinalInput.value.trim() || sourceFileName || 'image';
+    const baseName = (currentTab === 'text' ? textOutputNameInput.value.trim() : outputNameInput.value.trim()) || sourceFileName || 'image';
 
     let filename;
     if (addTimestampCheckbox.checked) {
@@ -568,6 +561,7 @@ let textItems = [];
 let selectedTextId = null;
 let baseImageData = null; // Stores the processed image data
 let isDragging = false;
+let dragMoved = false;
 let lastTextStyle = {
     fontFamily: 'Arial',
     fontSize: 48,
@@ -767,6 +761,8 @@ function selectTextItem(id) {
     }
     updateStyleControls();
     renderTextItemsList();
+    textContentInput.focus();
+    textContentInput.select();
 }
 
 // Update hint visibility
@@ -935,12 +931,14 @@ function renderTextOverlay() {
 textCanvas.addEventListener('mousedown', (e) => {
     if (selectedTextId) {
         isDragging = true;
+        dragMoved = false;
         textCanvas.style.cursor = 'grabbing';
     }
 });
 
 textCanvas.addEventListener('mousemove', (e) => {
     if (isDragging && selectedTextId) {
+        dragMoved = true;
         const pos = getCanvasClickPosition(e, textCanvas);
         updateTextItem(selectedTextId, { x: pos.x, y: pos.y });
     }
@@ -960,10 +958,12 @@ textCanvas.addEventListener('mouseleave', () => {
     }
 });
 
-// Canvas click handler (for adding new text when no selection)
+// Canvas click handler
 textCanvas.addEventListener('click', (e) => {
-    if (!selectedTextId) {
-        const pos = getCanvasClickPosition(e, textCanvas);
+    const pos = getCanvasClickPosition(e, textCanvas);
+    if (selectedTextId && !dragMoved) {
+        updateTextItem(selectedTextId, { x: pos.x, y: pos.y });
+    } else if (!selectedTextId) {
         addTextItem(pos.x, pos.y);
     }
 });
@@ -1141,26 +1141,13 @@ centerVBtn.addEventListener('click', () => {
     }
 });
 
-// Sync filename fields between process tab and output pane
+// Sync filename fields between process tab and text overlay tab
 outputNameInput.addEventListener('input', () => {
-    outputNameFinalInput.value = outputNameInput.value;
     textOutputNameInput.value = outputNameInput.value;
 });
 
-outputNameFinalInput.addEventListener('input', () => {
-    outputNameInput.value = outputNameFinalInput.value;
-    textOutputNameInput.value = outputNameFinalInput.value;
-    // Update displayed filename
-    if (baseImageData) {
-        const { filename } = getCurrentOutputData();
-        outputFilename.textContent = filename;
-        textOutputFilename.textContent = filename;
-    }
-});
-
-// Sync text output name back to the main fields
+// Sync text output name back to the main field
 textOutputNameInput.addEventListener('input', () => {
-    outputNameFinalInput.value = textOutputNameInput.value;
     outputNameInput.value = textOutputNameInput.value;
     if (baseImageData) {
         const { filename } = getCurrentOutputData();
@@ -1188,7 +1175,7 @@ const SETTINGS_STORAGE_KEY = 'imager-settings';
 
 // Gather all current settings into a plain object
 function gatherSettings() {
-    return {
+    const settings = {
         // Process tab
         kn: keepNameCheckbox.checked,
         ts: addTimestampCheckbox.checked,
@@ -1225,6 +1212,11 @@ function gatherSettings() {
         tsc: lastTextStyle.shadowColor,
         tso: lastTextStyle.shadowOpacity,
     };
+    // Only save filename when "Keep name" is on
+    if (keepNameCheckbox.checked && outputNameInput.value.trim()) {
+        settings.fn = outputNameInput.value.trim();
+    }
+    return settings;
 }
 
 // Apply a settings object to the UI and internal state
@@ -1233,6 +1225,10 @@ function applySettings(s) {
 
     // Process tab
     if ('kn' in s) keepNameCheckbox.checked = s.kn;
+    if ('fn' in s) {
+        outputNameInput.value = s.fn;
+        textOutputNameInput.value = s.fn;
+    }
     if ('ts' in s) addTimestampCheckbox.checked = s.ts;
     if ('mw' in s) maxWidthInput.value = s.mw;
     if ('mh' in s) maxHeightInput.value = s.mh;
@@ -1315,7 +1311,7 @@ function loadFromUrl() {
 
 // Auto-save on any tracked input change
 [
-    'keep-name', 'add-timestamp', 'max-width', 'max-height',
+    'output-name', 'keep-name', 'add-timestamp', 'max-width', 'max-height',
     'aspect-ratio', 'custom-ratio-w', 'custom-ratio-h',
     'crop-position', 'overlay-margin',
     'shadow-offset-x', 'shadow-offset-y', 'shadow-blur', 'shadow-color', 'shadow-opacity',

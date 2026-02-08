@@ -5,7 +5,6 @@
   var downloadBtn = document.getElementById("download-btn");
   var previewBtn = document.getElementById("preview-btn");
   var outputNameInput = document.getElementById("output-name");
-  var outputNameFinalInput = document.getElementById("output-name-final");
   var keepNameCheckbox = document.getElementById("keep-name");
   var addTimestampCheckbox = document.getElementById("add-timestamp");
   var maxWidthInput = document.getElementById("max-width");
@@ -163,7 +162,7 @@
       nameParts.pop();
       sourceFileName = nameParts.join(".");
       sourceMimeType = file.type || "image/png";
-      if (!outputNameInput.value.trim()) {
+      if (!keepNameCheckbox.checked || !outputNameInput.value.trim()) {
         outputNameInput.value = sourceFileName;
       }
       const img = new Image();
@@ -335,11 +334,7 @@
     canvas.dataset.dataUrl = dataUrl;
     canvas.dataset.width = targetWidth;
     canvas.dataset.height = targetHeight;
-    outputNameFinalInput.value = baseName;
     textOutputNameInput.value = baseName;
-    if (!keepNameCheckbox.checked) {
-      outputNameInput.value = "";
-    }
     outputContainer.classList.remove("hidden");
     if (previewWindow && !previewWindow.closed) {
       updatePreviewWindow();
@@ -353,7 +348,7 @@
     const isOutputJpg = outputMimeType === "image/jpeg";
     const quality = isOutputJpg ? (parseInt(jpgQualityInput.value) || 80) / 100 : 1;
     const extension = getExtensionFromMime(outputMimeType);
-    const baseName = outputNameFinalInput.value.trim() || sourceFileName || "image";
+    const baseName = (currentTab === "text" ? textOutputNameInput.value.trim() : outputNameInput.value.trim()) || sourceFileName || "image";
     let filename;
     if (addTimestampCheckbox.checked) {
       const timestamp = getTimestamp();
@@ -443,6 +438,7 @@
   var selectedTextId = null;
   var baseImageData = null;
   var isDragging = false;
+  var dragMoved = false;
   var lastTextStyle = {
     fontFamily: "Arial",
     fontSize: 48,
@@ -602,6 +598,8 @@
     }
     updateStyleControls();
     renderTextItemsList();
+    textContentInput.focus();
+    textContentInput.select();
   }
   function updateHintVisibility() {
     if (textItems.length === 0) {
@@ -729,11 +727,13 @@
   textCanvas.addEventListener("mousedown", (e) => {
     if (selectedTextId) {
       isDragging = true;
+      dragMoved = false;
       textCanvas.style.cursor = "grabbing";
     }
   });
   textCanvas.addEventListener("mousemove", (e) => {
     if (isDragging && selectedTextId) {
+      dragMoved = true;
       const pos = getCanvasClickPosition(e, textCanvas);
       updateTextItem(selectedTextId, { x: pos.x, y: pos.y });
     }
@@ -751,8 +751,10 @@
     }
   });
   textCanvas.addEventListener("click", (e) => {
-    if (!selectedTextId) {
-      const pos = getCanvasClickPosition(e, textCanvas);
+    const pos = getCanvasClickPosition(e, textCanvas);
+    if (selectedTextId && !dragMoved) {
+      updateTextItem(selectedTextId, { x: pos.x, y: pos.y });
+    } else if (!selectedTextId) {
       addTextItem(pos.x, pos.y);
     }
   });
@@ -902,20 +904,9 @@
     }
   });
   outputNameInput.addEventListener("input", () => {
-    outputNameFinalInput.value = outputNameInput.value;
     textOutputNameInput.value = outputNameInput.value;
   });
-  outputNameFinalInput.addEventListener("input", () => {
-    outputNameInput.value = outputNameFinalInput.value;
-    textOutputNameInput.value = outputNameFinalInput.value;
-    if (baseImageData) {
-      const { filename } = getCurrentOutputData();
-      outputFilename.textContent = filename;
-      textOutputFilename.textContent = filename;
-    }
-  });
   textOutputNameInput.addEventListener("input", () => {
-    outputNameFinalInput.value = textOutputNameInput.value;
     outputNameInput.value = textOutputNameInput.value;
     if (baseImageData) {
       const { filename } = getCurrentOutputData();
@@ -933,7 +924,7 @@
   textPreviewBtn.addEventListener("click", updatePreviewWindow);
   var SETTINGS_STORAGE_KEY = "imager-settings";
   function gatherSettings() {
-    return {
+    const settings = {
       // Process tab
       kn: keepNameCheckbox.checked,
       ts: addTimestampCheckbox.checked,
@@ -970,10 +961,18 @@
       tsc: lastTextStyle.shadowColor,
       tso: lastTextStyle.shadowOpacity
     };
+    if (keepNameCheckbox.checked && outputNameInput.value.trim()) {
+      settings.fn = outputNameInput.value.trim();
+    }
+    return settings;
   }
   function applySettings(s) {
     if (!s) return;
     if ("kn" in s) keepNameCheckbox.checked = s.kn;
+    if ("fn" in s) {
+      outputNameInput.value = s.fn;
+      textOutputNameInput.value = s.fn;
+    }
     if ("ts" in s) addTimestampCheckbox.checked = s.ts;
     if ("mw" in s) maxWidthInput.value = s.mw;
     if ("mh" in s) maxHeightInput.value = s.mh;
@@ -1049,6 +1048,7 @@
     return null;
   }
   [
+    "output-name",
     "keep-name",
     "add-timestamp",
     "max-width",
