@@ -425,12 +425,21 @@
   var toggleUppercaseBtn = document.getElementById("toggle-uppercase");
   var textOutlineCheckbox = document.getElementById("text-outline");
   var textOutlineColorInput = document.getElementById("text-outline-color");
+  var textOutlineOpacityInput = document.getElementById("text-outline-opacity");
   var textShadowCheckbox = document.getElementById("text-shadow");
   var textShadowXInput = document.getElementById("text-shadow-x");
   var textShadowYInput = document.getElementById("text-shadow-y");
   var textShadowBlurInput = document.getElementById("text-shadow-blur");
   var textShadowColorInput = document.getElementById("text-shadow-color");
   var textShadowOpacityInput = document.getElementById("text-shadow-opacity");
+  var textBgCheckbox = document.getElementById("text-bg");
+  var textBgColorInput = document.getElementById("text-bg-color");
+  var textBgOpacityInput = document.getElementById("text-bg-opacity");
+  var textBgPaddingInput = document.getElementById("text-bg-padding");
+  var textBgWidthInput = document.getElementById("text-bg-width");
+  var textBgOffsetXInput = document.getElementById("text-bg-offset-x");
+  var textBgSlantLeftInput = document.getElementById("text-bg-slant-left");
+  var textBgSlantRightInput = document.getElementById("text-bg-slant-right");
   var deleteTextBtn = document.getElementById("delete-text-btn");
   var centerHBtn = document.getElementById("center-h-btn");
   var centerVBtn = document.getElementById("center-v-btn");
@@ -450,12 +459,21 @@
     uppercase: false,
     outline: false,
     outlineColor: "#000000",
+    outlineOpacity: 100,
     shadow: false,
     shadowX: 3,
     shadowY: 3,
     shadowBlur: 4,
     shadowColor: "#000000",
-    shadowOpacity: 80
+    shadowOpacity: 80,
+    bg: false,
+    bgColor: "#000000",
+    bgOpacity: 50,
+    bgPadding: 10,
+    bgWidth: 0,
+    bgOffsetX: 0,
+    bgSlantLeft: 0,
+    bgSlantRight: 0
   };
   function generateId() {
     return Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
@@ -476,12 +494,21 @@
       uppercase: lastTextStyle.uppercase,
       outline: lastTextStyle.outline,
       outlineColor: lastTextStyle.outlineColor,
+      outlineOpacity: lastTextStyle.outlineOpacity,
       shadow: lastTextStyle.shadow,
       shadowX: lastTextStyle.shadowX,
       shadowY: lastTextStyle.shadowY,
       shadowBlur: lastTextStyle.shadowBlur,
       shadowColor: lastTextStyle.shadowColor,
-      shadowOpacity: lastTextStyle.shadowOpacity
+      shadowOpacity: lastTextStyle.shadowOpacity,
+      bg: lastTextStyle.bg,
+      bgColor: lastTextStyle.bgColor,
+      bgOpacity: lastTextStyle.bgOpacity,
+      bgPadding: lastTextStyle.bgPadding,
+      bgWidth: lastTextStyle.bgWidth,
+      bgOffsetX: lastTextStyle.bgOffsetX,
+      bgSlantLeft: lastTextStyle.bgSlantLeft,
+      bgSlantRight: lastTextStyle.bgSlantRight
     };
   }
   function updateOutputPane() {
@@ -562,7 +589,7 @@
     const item = textItems.find((i) => i.id === id);
     if (item) {
       Object.assign(item, updates);
-      const styleKeys = ["fontFamily", "fontSize", "color", "opacity", "bold", "italic", "underline", "uppercase", "outline", "outlineColor", "shadow", "shadowX", "shadowY", "shadowBlur", "shadowColor", "shadowOpacity"];
+      const styleKeys = ["fontFamily", "fontSize", "color", "opacity", "bold", "italic", "underline", "uppercase", "outline", "outlineColor", "outlineOpacity", "shadow", "shadowX", "shadowY", "shadowBlur", "shadowColor", "shadowOpacity", "bg", "bgColor", "bgOpacity", "bgPadding", "bgWidth", "bgOffsetX", "bgSlantLeft", "bgSlantRight"];
       styleKeys.forEach((key) => {
         if (key in item) {
           lastTextStyle[key] = item[key];
@@ -589,7 +616,7 @@
     selectedTextId = id;
     const item = textItems.find((i) => i.id === id);
     if (item) {
-      const styleKeys = ["fontFamily", "fontSize", "color", "opacity", "bold", "italic", "underline", "uppercase", "outline", "outlineColor", "shadow", "shadowX", "shadowY", "shadowBlur", "shadowColor", "shadowOpacity"];
+      const styleKeys = ["fontFamily", "fontSize", "color", "opacity", "bold", "italic", "underline", "uppercase", "outline", "outlineColor", "outlineOpacity", "shadow", "shadowX", "shadowY", "shadowBlur", "shadowColor", "shadowOpacity", "bg", "bgColor", "bgOpacity", "bgPadding", "bgWidth", "bgOffsetX", "bgSlantLeft", "bgSlantRight"];
       styleKeys.forEach((key) => {
         if (key in item) {
           lastTextStyle[key] = item[key];
@@ -625,12 +652,21 @@
       toggleUppercaseBtn.classList.toggle("active", item.uppercase);
       textOutlineCheckbox.checked = item.outline;
       textOutlineColorInput.value = item.outlineColor;
+      textOutlineOpacityInput.value = item.outlineOpacity;
       textShadowCheckbox.checked = item.shadow;
       textShadowXInput.value = item.shadowX;
       textShadowYInput.value = item.shadowY;
       textShadowBlurInput.value = item.shadowBlur;
       textShadowColorInput.value = item.shadowColor;
       textShadowOpacityInput.value = item.shadowOpacity;
+      textBgCheckbox.checked = item.bg;
+      textBgColorInput.value = item.bgColor;
+      textBgOpacityInput.value = item.bgOpacity;
+      textBgPaddingInput.value = item.bgPadding;
+      textBgWidthInput.value = item.bgWidth;
+      textBgOffsetXInput.value = item.bgOffsetX;
+      textBgSlantLeftInput.value = item.bgSlantLeft;
+      textBgSlantRightInput.value = item.bgSlantRight;
     } else {
       noSelectionMsg.classList.remove("hidden");
       styleControlsInner.classList.add("hidden");
@@ -673,30 +709,67 @@
     ctx2.font = fontStyle;
     ctx2.textAlign = "left";
     ctx2.textBaseline = "top";
-    ctx2.globalAlpha = item.opacity / 100;
     const displayText = item.uppercase ? item.text.toUpperCase() : item.text;
+    if (item.bg) {
+      ctx2.save();
+      const textMetrics = ctx2.measureText(displayText);
+      const textWidth = textMetrics.width;
+      const ascent = textMetrics.actualBoundingBoxAscent;
+      const descent = textMetrics.actualBoundingBoxDescent;
+      const textHeight = ascent + descent;
+      const padding = item.bgPadding;
+      const bgW = item.bgWidth > 0 ? item.bgWidth / 100 * canvasWidth : textWidth + 2 * padding;
+      const bgH = textHeight + 2 * padding;
+      const centerX = x + textWidth / 2 + item.bgOffsetX;
+      const centerY = y + (descent - ascent) / 2;
+      const left = centerX - bgW / 2;
+      const right = centerX + bgW / 2;
+      const top = centerY - bgH / 2;
+      const bottom = centerY + bgH / 2;
+      const sl = item.bgSlantLeft;
+      const sr = item.bgSlantRight;
+      const r = parseInt(item.bgColor.slice(1, 3), 16);
+      const g = parseInt(item.bgColor.slice(3, 5), 16);
+      const b = parseInt(item.bgColor.slice(5, 7), 16);
+      const a = item.bgOpacity / 100;
+      ctx2.globalAlpha = 1;
+      ctx2.fillStyle = `rgba(${r}, ${g}, ${b}, ${a})`;
+      ctx2.beginPath();
+      ctx2.moveTo(left + sl, top);
+      ctx2.lineTo(right - sr, top);
+      ctx2.lineTo(right, bottom);
+      ctx2.lineTo(left, bottom);
+      ctx2.closePath();
+      ctx2.fill();
+      ctx2.restore();
+    }
     if (item.shadow) {
+      ctx2.save();
       const r = parseInt(item.shadowColor.slice(1, 3), 16);
       const g = parseInt(item.shadowColor.slice(3, 5), 16);
       const b = parseInt(item.shadowColor.slice(5, 7), 16);
-      const a = item.shadowOpacity / 100;
-      ctx2.shadowColor = `rgba(${r}, ${g}, ${b}, ${a})`;
-      ctx2.shadowOffsetX = item.shadowX;
-      ctx2.shadowOffsetY = item.shadowY;
-      ctx2.shadowBlur = item.shadowBlur;
+      ctx2.globalAlpha = item.shadowOpacity / 100;
+      ctx2.filter = `blur(${item.shadowBlur}px)`;
+      ctx2.fillStyle = `rgb(${r}, ${g}, ${b})`;
+      if (item.outline) {
+        ctx2.strokeStyle = ctx2.fillStyle;
+        ctx2.lineWidth = Math.max(2, item.fontSize / 12);
+        ctx2.lineJoin = "round";
+        ctx2.strokeText(displayText, x + item.shadowX, y + item.shadowY);
+      }
+      ctx2.fillText(displayText, x + item.shadowX, y + item.shadowY);
+      ctx2.restore();
     }
     if (item.outline) {
+      ctx2.globalAlpha = item.outlineOpacity / 100;
       ctx2.strokeStyle = item.outlineColor;
       ctx2.lineWidth = Math.max(2, item.fontSize / 12);
       ctx2.lineJoin = "round";
       ctx2.strokeText(displayText, x, y);
     }
+    ctx2.globalAlpha = item.opacity / 100;
     ctx2.fillStyle = item.color;
     ctx2.fillText(displayText, x, y);
-    ctx2.shadowColor = "transparent";
-    ctx2.shadowOffsetX = 0;
-    ctx2.shadowOffsetY = 0;
-    ctx2.shadowBlur = 0;
     if (item.underline) {
       const metrics = ctx2.measureText(displayText);
       const underlineY = y + item.fontSize * 0.95;
@@ -838,6 +911,11 @@
       updateTextItem(selectedTextId, { outlineColor: textOutlineColorInput.value });
     }
   });
+  textOutlineOpacityInput.addEventListener("input", () => {
+    if (selectedTextId) {
+      updateTextItem(selectedTextId, { outlineOpacity: parseInt(textOutlineOpacityInput.value) || 0 });
+    }
+  });
   textShadowCheckbox.addEventListener("change", () => {
     if (selectedTextId) {
       updateTextItem(selectedTextId, { shadow: textShadowCheckbox.checked });
@@ -866,6 +944,46 @@
   textShadowOpacityInput.addEventListener("input", () => {
     if (selectedTextId) {
       updateTextItem(selectedTextId, { shadowOpacity: parseInt(textShadowOpacityInput.value) || 0 });
+    }
+  });
+  textBgCheckbox.addEventListener("change", () => {
+    if (selectedTextId) {
+      updateTextItem(selectedTextId, { bg: textBgCheckbox.checked });
+    }
+  });
+  textBgColorInput.addEventListener("input", () => {
+    if (selectedTextId) {
+      updateTextItem(selectedTextId, { bgColor: textBgColorInput.value });
+    }
+  });
+  textBgOpacityInput.addEventListener("input", () => {
+    if (selectedTextId) {
+      updateTextItem(selectedTextId, { bgOpacity: parseInt(textBgOpacityInput.value) || 0 });
+    }
+  });
+  textBgPaddingInput.addEventListener("input", () => {
+    if (selectedTextId) {
+      updateTextItem(selectedTextId, { bgPadding: parseInt(textBgPaddingInput.value) || 0 });
+    }
+  });
+  textBgWidthInput.addEventListener("input", () => {
+    if (selectedTextId) {
+      updateTextItem(selectedTextId, { bgWidth: parseInt(textBgWidthInput.value) || 0 });
+    }
+  });
+  textBgOffsetXInput.addEventListener("input", () => {
+    if (selectedTextId) {
+      updateTextItem(selectedTextId, { bgOffsetX: parseInt(textBgOffsetXInput.value) || 0 });
+    }
+  });
+  textBgSlantLeftInput.addEventListener("input", () => {
+    if (selectedTextId) {
+      updateTextItem(selectedTextId, { bgSlantLeft: parseInt(textBgSlantLeftInput.value) || 0 });
+    }
+  });
+  textBgSlantRightInput.addEventListener("input", () => {
+    if (selectedTextId) {
+      updateTextItem(selectedTextId, { bgSlantRight: parseInt(textBgSlantRightInput.value) || 0 });
     }
   });
   deleteTextBtn.addEventListener("click", () => {
@@ -954,12 +1072,21 @@
       tuc: lastTextStyle.uppercase,
       tol: lastTextStyle.outline,
       toc: lastTextStyle.outlineColor,
+      too: lastTextStyle.outlineOpacity,
       tsh: lastTextStyle.shadow,
       tsx: lastTextStyle.shadowX,
       tsy: lastTextStyle.shadowY,
       tsb: lastTextStyle.shadowBlur,
       tsc: lastTextStyle.shadowColor,
-      tso: lastTextStyle.shadowOpacity
+      tso: lastTextStyle.shadowOpacity,
+      tbg: lastTextStyle.bg,
+      tbc: lastTextStyle.bgColor,
+      tbo: lastTextStyle.bgOpacity,
+      tbp: lastTextStyle.bgPadding,
+      tbw: lastTextStyle.bgWidth,
+      tbox: lastTextStyle.bgOffsetX,
+      tbsl: lastTextStyle.bgSlantLeft,
+      tbsr: lastTextStyle.bgSlantRight
     };
     if (keepNameCheckbox.checked && outputNameInput.value.trim()) {
       settings.fn = outputNameInput.value.trim();
@@ -1007,12 +1134,21 @@
     if ("tuc" in s) lastTextStyle.uppercase = s.tuc;
     if ("tol" in s) lastTextStyle.outline = s.tol;
     if ("toc" in s) lastTextStyle.outlineColor = s.toc;
+    if ("too" in s) lastTextStyle.outlineOpacity = s.too;
     if ("tsh" in s) lastTextStyle.shadow = s.tsh;
     if ("tsx" in s) lastTextStyle.shadowX = s.tsx;
     if ("tsy" in s) lastTextStyle.shadowY = s.tsy;
     if ("tsb" in s) lastTextStyle.shadowBlur = s.tsb;
     if ("tsc" in s) lastTextStyle.shadowColor = s.tsc;
     if ("tso" in s) lastTextStyle.shadowOpacity = s.tso;
+    if ("tbg" in s) lastTextStyle.bg = s.tbg;
+    if ("tbc" in s) lastTextStyle.bgColor = s.tbc;
+    if ("tbo" in s) lastTextStyle.bgOpacity = s.tbo;
+    if ("tbp" in s) lastTextStyle.bgPadding = s.tbp;
+    if ("tbw" in s) lastTextStyle.bgWidth = s.tbw;
+    if ("tbox" in s) lastTextStyle.bgOffsetX = s.tbox;
+    if ("tbsl" in s) lastTextStyle.bgSlantLeft = s.tbsl;
+    if ("tbsr" in s) lastTextStyle.bgSlantRight = s.tbsr;
   }
   function saveToLocalStorage() {
     try {
@@ -1071,12 +1207,21 @@
     "text-opacity",
     "text-outline",
     "text-outline-color",
+    "text-outline-opacity",
     "text-shadow",
     "text-shadow-x",
     "text-shadow-y",
     "text-shadow-blur",
     "text-shadow-color",
-    "text-shadow-opacity"
+    "text-shadow-opacity",
+    "text-bg",
+    "text-bg-color",
+    "text-bg-opacity",
+    "text-bg-padding",
+    "text-bg-width",
+    "text-bg-offset-x",
+    "text-bg-slant-left",
+    "text-bg-slant-right"
   ].forEach((id) => {
     const el = document.getElementById(id);
     if (el) {

@@ -354,7 +354,9 @@
                                     <label class="label-text text-xs block mb-1">Outline</label>
                                     <div class="flex items-center gap-2">
                                         <input type="checkbox" id="text-outline" class="accent-brass cursor-pointer">
-                                        <input type="color" id="text-outline-color" value="#000000" class="input-field w-8 h-6 rounded cursor-pointer">
+                                        <input type="color" id="text-outline-color" value="#000000" class="input-field w-8 h-6 p-0.5 rounded cursor-pointer">
+                                        <input type="number" id="text-outline-opacity" value="100" min="0" max="100" class="input-field w-12 px-1 py-1 rounded text-xs">
+                                        <span class="muted-text text-xs">%</span>
                                     </div>
                                 </div>
 
@@ -379,6 +381,44 @@
                                             <div class="flex items-center gap-0.5">
                                                 <span class="body-text text-xs">B:</span>
                                                 <input type="number" id="text-shadow-blur" value="4" min="0" max="100" class="input-field w-10 px-1 py-1 rounded text-xs">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Background -->
+                                <div>
+                                    <label class="label-text text-xs block mb-1">Background</label>
+                                    <div class="space-y-1">
+                                        <div class="flex items-center gap-2">
+                                            <input type="checkbox" id="text-bg" class="accent-brass cursor-pointer">
+                                            <input type="color" id="text-bg-color" value="#000000" class="input-field w-8 h-6 p-0.5 rounded cursor-pointer">
+                                            <input type="number" id="text-bg-opacity" value="50" min="0" max="100" class="input-field w-12 px-1 py-1 rounded text-xs">
+                                            <span class="muted-text text-xs">%</span>
+                                        </div>
+                                        <div class="flex gap-2">
+                                            <div class="flex items-center gap-0.5">
+                                                <span class="body-text text-xs">Pad:</span>
+                                                <input type="number" id="text-bg-padding" value="10" min="0" max="200" class="input-field w-12 px-1 py-1 rounded text-xs">
+                                            </div>
+                                            <div class="flex items-center gap-0.5">
+                                                <span class="body-text text-xs">W:</span>
+                                                <input type="number" id="text-bg-width" value="0" min="0" max="100" class="input-field w-12 px-1 py-1 rounded text-xs">
+                                                <span class="body-text text-xs">%</span>
+                                            </div>
+                                            <div class="flex items-center gap-0.5">
+                                                <span class="body-text text-xs">Off:</span>
+                                                <input type="number" id="text-bg-offset-x" value="0" min="-500" max="500" class="input-field w-12 px-1 py-1 rounded text-xs">
+                                            </div>
+                                        </div>
+                                        <div class="flex gap-2">
+                                            <div class="flex items-center gap-0.5">
+                                                <span class="body-text text-xs">Slant L:</span>
+                                                <input type="number" id="text-bg-slant-left" value="0" min="-100" max="100" class="input-field w-12 px-1 py-1 rounded text-xs">
+                                            </div>
+                                            <div class="flex items-center gap-0.5">
+                                                <span class="body-text text-xs">Slant R:</span>
+                                                <input type="number" id="text-bg-slant-right" value="0" min="-100" max="100" class="input-field w-12 px-1 py-1 rounded text-xs">
                                             </div>
                                         </div>
                                     </div>
