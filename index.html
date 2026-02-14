@@ -63,9 +63,9 @@
 
             <div class="mb-5">
                 <label for="image-upload" class="label-text block mb-2">Upload Image</label>
-                <input type="file" id="image-upload" accept="image/*" class="hidden">
+                <input type="file" id="image-upload" accept="image/*" multiple class="hidden">
                 <button onclick="document.getElementById('image-upload').click()" class="btn-secondary px-6 py-3 rounded cursor-pointer">
-                    ⚙ Select File
+                    ⚙ Select File(s)
                 </button>
             </div>
 
@@ -207,6 +207,9 @@
                     <button id="process-btn" class="btn-primary w-full px-6 py-3 rounded cursor-pointer" disabled>
                         ⚙ Process Image
                     </button>
+                    <div id="batch-progress" class="hidden mt-2 text-sm body-text text-center">
+                        <span id="batch-progress-text"></span>
+                    </div>
                 </div>
                 </div>
             </div>
@@ -497,6 +500,7 @@
         </div>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="dist/main.js"></script>
 </body>
 </html>

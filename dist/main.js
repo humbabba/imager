@@ -26,6 +26,8 @@
   var qualityContainer = document.getElementById("quality-container");
   var jpgQualityInput = document.getElementById("jpg-quality");
   var forceJpgCheckbox = document.getElementById("force-jpg");
+  var batchProgress = document.getElementById("batch-progress");
+  var batchProgressText = document.getElementById("batch-progress-text");
   function updateQualityVisibility() {
     const isJpg = sourceMimeType === "image/jpeg";
     const forceJpg = forceJpgCheckbox.checked;
@@ -88,6 +90,10 @@
     return (bytes / (1024 * 1024)).toFixed(2) + " MB";
   }
   var uploadedImage = null;
+  var uploadedFiles = [];
+  var processedImages = [];
+  var isProcessing = false;
+  var outputNameManuallyEdited = false;
   function updateCropPositionOptions() {
     const aspectRatio = getAspectRatio();
     const resizeMode = document.querySelector('input[name="resize-mode"]:checked').value;
@@ -164,64 +170,82 @@
     return mimeToExt[mimeType] || "png";
   }
   fileInput.addEventListener("change", (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const nameParts = file.name.split(".");
-      nameParts.pop();
-      sourceFileName = nameParts.join(".");
-      sourceMimeType = file.type || "image/png";
-      if (!keepNameCheckbox.checked || !outputNameInput.value.trim()) {
-        outputNameInput.value = sourceFileName;
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+    uploadedFiles = files;
+    processedImages = [];
+    outputNameManuallyEdited = false;
+    const file = files[0];
+    const nameParts = file.name.split(".");
+    nameParts.pop();
+    sourceFileName = nameParts.join(".");
+    sourceMimeType = file.type || "image/png";
+    if (!keepNameCheckbox.checked || !outputNameInput.value.trim()) {
+      outputNameInput.value = sourceFileName;
+    }
+    const img = new Image();
+    const objectUrl = URL.createObjectURL(file);
+    img.onload = () => {
+      uploadedImage = img;
+      processBtn.disabled = false;
+      updateCropPositionOptions();
+      sourcePreview.src = objectUrl;
+      sourceFilenameEl.textContent = file.name;
+      sourceDimensionsEl.textContent = `${img.width} \xD7 ${img.height} px`;
+      sourceFilesizeEl.textContent = formatFilesize(file.size);
+      sourceContainer.classList.remove("hidden");
+      updateQualityVisibility();
+      if (files.length > 1) {
+        processBtn.innerHTML = `\u2699 Process ${files.length} Images`;
+      } else {
+        processBtn.innerHTML = "\u2699 Process Image";
       }
+      downloadBtn.innerHTML = "\u2699 Download";
+      textDownloadBtn.innerHTML = "\u2699 Download";
+    };
+    img.src = objectUrl;
+  });
+  function loadFileAsImage(file) {
+    return new Promise((resolve, reject) => {
       const img = new Image();
       const objectUrl = URL.createObjectURL(file);
-      img.onload = () => {
-        uploadedImage = img;
-        processBtn.disabled = false;
-        updateCropPositionOptions();
-        sourcePreview.src = objectUrl;
-        sourceFilenameEl.textContent = file.name;
-        sourceDimensionsEl.textContent = `${img.width} \xD7 ${img.height} px`;
-        sourceFilesizeEl.textContent = formatFilesize(file.size);
-        sourceContainer.classList.remove("hidden");
-        updateQualityVisibility();
-      };
+      img.onload = () => resolve(img);
+      img.onerror = reject;
       img.src = objectUrl;
-    }
-  });
-  processBtn.addEventListener("click", () => {
-    if (!uploadedImage) return;
-    const maxWidth = parseInt(maxWidthInput.value) || uploadedImage.width;
-    const maxHeight = parseInt(maxHeightInput.value) || uploadedImage.height;
+    });
+  }
+  function processSingleImage(img, fileBaseName, fileMimeType) {
+    const maxWidth = parseInt(maxWidthInput.value) || img.width;
+    const maxHeight = parseInt(maxHeightInput.value) || img.height;
     const aspectRatio = getAspectRatio();
     const resizeMode = document.querySelector('input[name="resize-mode"]:checked').value;
     let targetWidth, targetHeight;
-    let sourceX = 0, sourceY = 0, sourceWidth = uploadedImage.width, sourceHeight = uploadedImage.height;
+    let sourceX = 0, sourceY = 0, sourceWidth = img.width, sourceHeight = img.height;
     if (aspectRatio) {
       const [ratioW, ratioH] = aspectRatio.split(":").map(Number);
       const ratio = ratioW / ratioH;
       if (resizeMode === "crop") {
-        const imgRatio = uploadedImage.width / uploadedImage.height;
+        const imgRatio = img.width / img.height;
         const cropPosition = cropPositionSelect.value;
         if (imgRatio > ratio) {
-          sourceHeight = uploadedImage.height;
+          sourceHeight = img.height;
           sourceWidth = sourceHeight * ratio;
           if (cropPosition === "left") {
             sourceX = 0;
           } else if (cropPosition === "right") {
-            sourceX = uploadedImage.width - sourceWidth;
+            sourceX = img.width - sourceWidth;
           } else {
-            sourceX = (uploadedImage.width - sourceWidth) / 2;
+            sourceX = (img.width - sourceWidth) / 2;
           }
         } else {
-          sourceWidth = uploadedImage.width;
+          sourceWidth = img.width;
           sourceHeight = sourceWidth / ratio;
           if (cropPosition === "top") {
             sourceY = 0;
           } else if (cropPosition === "bottom") {
-            sourceY = uploadedImage.height - sourceHeight;
+            sourceY = img.height - sourceHeight;
           } else {
-            sourceY = (uploadedImage.height - sourceHeight) / 2;
+            sourceY = (img.height - sourceHeight) / 2;
           }
         }
         if (maxWidth / ratio <= maxHeight) {
@@ -240,12 +264,12 @@
         }
       }
     } else {
-      const imgRatio = uploadedImage.width / uploadedImage.height;
-      if (uploadedImage.width / maxWidth > uploadedImage.height / maxHeight) {
-        targetWidth = Math.min(maxWidth, uploadedImage.width);
+      const imgRatio = img.width / img.height;
+      if (img.width / maxWidth > img.height / maxHeight) {
+        targetWidth = Math.min(maxWidth, img.width);
         targetHeight = targetWidth / imgRatio;
       } else {
-        targetHeight = Math.min(maxHeight, uploadedImage.height);
+        targetHeight = Math.min(maxHeight, img.height);
         targetWidth = targetHeight * imgRatio;
       }
     }
@@ -254,20 +278,20 @@
     canvas.width = targetWidth;
     canvas.height = targetHeight;
     if (resizeMode === "overlay" && aspectRatio) {
-      const imgRatio = uploadedImage.width / uploadedImage.height;
+      const imgRatio = img.width / img.height;
       const canvasRatio = targetWidth / targetHeight;
       const marginPercent = parseFloat(overlayMarginInput.value) || 0;
       const smallerDimension = Math.min(targetWidth, targetHeight);
       const margin = marginPercent / 100 * smallerDimension;
       const shadowOffsetX = parseFloat(shadowOffsetXInput.value) || 0;
       const shadowOffsetY = parseFloat(shadowOffsetYInput.value) || 0;
-      const shadowBlur = parseFloat(shadowBlurInput.value) || 0;
+      const shadowBlurVal = parseFloat(shadowBlurInput.value) || 0;
       const shadowColorHex = shadowColorInput.value || "#000000";
-      const shadowOpacity = (parseFloat(shadowOpacityInput.value) || 0) / 100;
+      const shadowOpacityVal = (parseFloat(shadowOpacityInput.value) || 0) / 100;
       const r = parseInt(shadowColorHex.slice(1, 3), 16);
       const g = parseInt(shadowColorHex.slice(3, 5), 16);
       const b = parseInt(shadowColorHex.slice(5, 7), 16);
-      const shadowColor = `rgba(${r}, ${g}, ${b}, ${shadowOpacity})`;
+      const shadowColorRgba = `rgba(${r}, ${g}, ${b}, ${shadowOpacityVal})`;
       if (overlayBlurCheckbox.checked) {
         let bgWidth, bgHeight, bgX, bgY;
         if (imgRatio > canvasRatio) {
@@ -282,7 +306,7 @@
           bgY = (targetHeight - bgHeight) / 2;
         }
         ctx.filter = "blur(20px)";
-        ctx.drawImage(uploadedImage, bgX, bgY, bgWidth, bgHeight);
+        ctx.drawImage(img, bgX, bgY, bgWidth, bgHeight);
         ctx.filter = "none";
       } else {
         ctx.fillStyle = overlayBgColorInput.value;
@@ -300,20 +324,20 @@
       }
       const drawX = (targetWidth - drawWidth) / 2;
       const drawY = (targetHeight - drawHeight) / 2;
-      if (shadowEnabledCheckbox.checked && (shadowBlur > 0 || shadowOffsetX !== 0 || shadowOffsetY !== 0)) {
-        ctx.shadowColor = shadowColor;
-        ctx.shadowBlur = shadowBlur;
+      if (shadowEnabledCheckbox.checked && (shadowBlurVal > 0 || shadowOffsetX !== 0 || shadowOffsetY !== 0)) {
+        ctx.shadowColor = shadowColorRgba;
+        ctx.shadowBlur = shadowBlurVal;
         ctx.shadowOffsetX = shadowOffsetX;
         ctx.shadowOffsetY = shadowOffsetY;
       }
-      ctx.drawImage(uploadedImage, drawX, drawY, drawWidth, drawHeight);
+      ctx.drawImage(img, drawX, drawY, drawWidth, drawHeight);
       ctx.shadowColor = "transparent";
       ctx.shadowBlur = 0;
       ctx.shadowOffsetX = 0;
       ctx.shadowOffsetY = 0;
     } else {
       ctx.drawImage(
-        uploadedImage,
+        img,
         sourceX,
         sourceY,
         sourceWidth,
@@ -325,14 +349,12 @@
       );
     }
     const forceJpg = forceJpgCheckbox.checked;
-    const outputMimeType = forceJpg ? "image/jpeg" : sourceMimeType;
+    const outputMimeType = forceJpg ? "image/jpeg" : fileMimeType;
     const isOutputJpg = outputMimeType === "image/jpeg";
     const quality = isOutputJpg ? (parseInt(jpgQualityInput.value) || 80) / 100 : 1;
     const dataUrl = canvas.toDataURL(outputMimeType, quality);
-    const outputBytes = Math.round((dataUrl.length - `data:${sourceMimeType};base64,`.length) * 0.75);
-    outputFilesizeEl.textContent = formatFilesize(outputBytes);
     const extension = getExtensionFromMime(outputMimeType);
-    const baseName = outputNameInput.value.trim() || sourceFileName;
+    const baseName = outputNameManuallyEdited && outputNameInput.value.trim() ? outputNameInput.value.trim() : fileBaseName;
     let generatedFilename;
     if (addTimestampCheckbox.checked) {
       const timestamp = getTimestamp();
@@ -340,19 +362,75 @@
     } else {
       generatedFilename = `${baseName}.${extension}`;
     }
-    outputFilename.textContent = generatedFilename;
-    outputDimensions.textContent = `${targetWidth} \xD7 ${targetHeight} px`;
-    canvas.dataset.filename = generatedFilename;
-    canvas.dataset.baseName = baseName;
-    canvas.dataset.dataUrl = dataUrl;
-    canvas.dataset.width = targetWidth;
-    canvas.dataset.height = targetHeight;
-    textOutputNameInput.value = baseName;
-    outputContainer.classList.remove("hidden");
+    return {
+      dataUrl,
+      filename: generatedFilename,
+      baseName,
+      width: targetWidth,
+      height: targetHeight,
+      outputMimeType
+    };
+  }
+  processBtn.addEventListener("click", async () => {
+    if (!uploadedImage || isProcessing) return;
+    isProcessing = true;
+    processBtn.disabled = true;
+    processedImages = [];
+    const total = uploadedFiles.length;
+    const isBatch = total > 1;
+    for (let i = 0; i < total; i++) {
+      const file = uploadedFiles[i];
+      if (isBatch) {
+        batchProgress.classList.remove("hidden");
+        batchProgressText.textContent = `Processing ${i + 1} of ${total}...`;
+      }
+      const img = await loadFileAsImage(file);
+      uploadedImage = img;
+      const nameParts = file.name.split(".");
+      nameParts.pop();
+      const fileBaseName = nameParts.join(".");
+      const fileMimeType = file.type || "image/png";
+      if (!outputNameManuallyEdited) {
+        outputNameInput.value = fileBaseName;
+        textOutputNameInput.value = fileBaseName;
+      }
+      const result = processSingleImage(img, fileBaseName, fileMimeType);
+      const resultImage = new Image();
+      resultImage.src = result.dataUrl;
+      processedImages.push({ ...result, image: resultImage });
+      const outputBytes = Math.round((result.dataUrl.length - `data:${result.outputMimeType};base64,`.length) * 0.75);
+      outputFilesizeEl.textContent = formatFilesize(outputBytes);
+      outputFilename.textContent = result.filename;
+      outputDimensions.textContent = `${result.width} \xD7 ${result.height} px`;
+      canvas.dataset.filename = result.filename;
+      canvas.dataset.baseName = result.baseName;
+      canvas.dataset.dataUrl = result.dataUrl;
+      canvas.dataset.width = result.width;
+      canvas.dataset.height = result.height;
+      outputContainer.classList.remove("hidden");
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    }
+    const lastResult = processedImages[processedImages.length - 1];
+    textOutputNameInput.value = lastResult.baseName;
     if (previewWindow && !previewWindow.closed) {
       updatePreviewWindow();
     }
     showTextOverlayTab();
+    if (isBatch) {
+      downloadBtn.innerHTML = "\u2699 Download ZIP";
+      textDownloadBtn.innerHTML = "\u2699 Download ZIP";
+    } else {
+      downloadBtn.innerHTML = "\u2699 Download";
+      textDownloadBtn.innerHTML = "\u2699 Download";
+    }
+    if (isBatch) {
+      batchProgressText.textContent = `Done! Processed ${total} images.`;
+      setTimeout(() => {
+        batchProgress.classList.add("hidden");
+      }, 2e3);
+    }
+    isProcessing = false;
+    processBtn.disabled = false;
   });
   var currentTab = "process";
   function getCurrentOutputData() {
@@ -382,13 +460,85 @@
     }
     return { dataUrl, filename, width, height, outputMimeType };
   }
-  downloadBtn.addEventListener("click", () => {
-    const { dataUrl, filename } = getCurrentOutputData();
+  function applyTextOverlayToImage(baseImage, w, h, mimeType, quality) {
+    const tempCanvas = document.createElement("canvas");
+    tempCanvas.width = w;
+    tempCanvas.height = h;
+    const tempCtx = tempCanvas.getContext("2d");
+    tempCtx.drawImage(baseImage, 0, 0, w, h);
+    textItems.forEach((item) => {
+      drawTextItem(tempCtx, item, w, h);
+    });
+    return tempCanvas.toDataURL(mimeType, quality);
+  }
+  function dataUrlToBlob(dataUrl) {
+    const parts = dataUrl.split(",");
+    const mime = parts[0].match(/:(.*?);/)[1];
+    const binary = atob(parts[1]);
+    const arr = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) {
+      arr[i] = binary.charCodeAt(i);
+    }
+    return new Blob([arr], { type: mime });
+  }
+  async function handleDownload() {
+    if (processedImages.length <= 1) {
+      const { dataUrl, filename } = getCurrentOutputData();
+      const link2 = document.createElement("a");
+      link2.download = filename;
+      link2.href = dataUrl;
+      link2.click();
+      return;
+    }
+    const zip = new JSZip();
+    const forceJpg = forceJpgCheckbox.checked;
+    const hasText = textItems.length > 0;
+    const usedNames = {};
+    for (const pImg of processedImages) {
+      const outputMimeType = forceJpg ? "image/jpeg" : pImg.outputMimeType;
+      const isOutputJpg = outputMimeType === "image/jpeg";
+      const quality = isOutputJpg ? (parseInt(jpgQualityInput.value) || 80) / 100 : 1;
+      let finalDataUrl;
+      if (hasText) {
+        if (!pImg.image.complete) {
+          await new Promise((resolve) => {
+            pImg.image.onload = resolve;
+          });
+        }
+        finalDataUrl = applyTextOverlayToImage(pImg.image, pImg.width, pImg.height, outputMimeType, quality);
+      } else {
+        finalDataUrl = pImg.dataUrl;
+      }
+      const extension = getExtensionFromMime(outputMimeType);
+      const nameBase = outputNameManuallyEdited && outputNameInput.value.trim() ? outputNameInput.value.trim() : pImg.baseName;
+      let candidateName;
+      if (addTimestampCheckbox.checked) {
+        const timestamp2 = getTimestamp();
+        candidateName = `${nameBase} - ${timestamp2}.${extension}`;
+      } else {
+        candidateName = `${nameBase}.${extension}`;
+      }
+      if (usedNames[candidateName]) {
+        usedNames[candidateName]++;
+        const dotIdx = candidateName.lastIndexOf(".");
+        candidateName = `${candidateName.substring(0, dotIdx)} (${usedNames[candidateName] - 1})${candidateName.substring(dotIdx)}`;
+      } else {
+        usedNames[candidateName] = 1;
+      }
+      const blob = dataUrlToBlob(finalDataUrl);
+      zip.file(candidateName, blob);
+    }
+    const zipBlob = await zip.generateAsync({ type: "blob" });
+    const baseName = outputNameManuallyEdited && outputNameInput.value.trim() ? outputNameInput.value.trim() : processedImages[0].baseName;
+    const timestamp = getTimestamp();
+    const zipFilename = `${baseName} - ${timestamp}.zip`;
     const link = document.createElement("a");
-    link.download = filename;
-    link.href = dataUrl;
+    link.download = zipFilename;
+    link.href = URL.createObjectURL(zipBlob);
     link.click();
-  });
+    URL.revokeObjectURL(link.href);
+  }
+  downloadBtn.addEventListener("click", handleDownload);
   var previewWindow = null;
   function updatePreviewWindow() {
     if (!previewWindow || previewWindow.closed) {
@@ -1035,9 +1185,11 @@
     }
   });
   outputNameInput.addEventListener("input", () => {
+    outputNameManuallyEdited = true;
     textOutputNameInput.value = outputNameInput.value;
   });
   textOutputNameInput.addEventListener("input", () => {
+    outputNameManuallyEdited = true;
     outputNameInput.value = textOutputNameInput.value;
     if (baseImageData) {
       const { filename } = getCurrentOutputData();
@@ -1045,13 +1197,7 @@
       textOutputFilename.textContent = filename;
     }
   });
-  textDownloadBtn.addEventListener("click", () => {
-    const { dataUrl, filename } = getCurrentOutputData();
-    const link = document.createElement("a");
-    link.download = filename;
-    link.href = dataUrl;
-    link.click();
-  });
+  textDownloadBtn.addEventListener("click", handleDownload);
   textPreviewBtn.addEventListener("click", updatePreviewWindow);
   var SETTINGS_STORAGE_KEY = "imager-settings";
   function gatherSettings() {
