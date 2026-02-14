@@ -144,36 +144,46 @@
             </div>
 
             <div id="overlay-options-container" class="mb-5 hidden">
-                <label class="label-text block mb-2">Overlay Options</label>
+                <label class="label-text block mb-2">Background options</label>
                 <div class="flex gap-4 flex-wrap mb-3">
                     <div class="flex items-center gap-2">
                         <span class="body-text text-sm">Margin:</span>
                         <input type="number" id="overlay-margin" value="3" min="0" max="50" class="input-field w-16 px-2 py-2 rounded">
                         <span class="muted-text">%</span>
                     </div>
+                    <div class="flex items-center gap-2">
+                        <label class=" cursor-pointer">
+                            <input type="checkbox" id="overlay-blur" class="accent-brass" checked>
+                            <span class="body-text text-sm">Blur</span>
+                        </label>
+                        <input type="color" id="overlay-bg-color" value="#ffffff" class="input-field w-10 h-9 p-1 rounded cursor-pointer hidden">
+                        <span id="overlay-bg-color-label" class="body-text text-sm hidden">Solid color</span>
+                    </div>
                 </div>
                 <label class="label-text block mb-2">Drop Shadow</label>
-                <div class="flex gap-4 flex-wrap">
+                <div class="space-y-2">
                     <div class="flex items-center gap-2">
-                        <span class="body-text text-sm">X:</span>
-                        <input type="number" id="shadow-offset-x" value="3" min="-50" max="50" class="input-field w-16 px-2 py-2 rounded">
-                        <span class="muted-text">px</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <span class="body-text text-sm">Y:</span>
-                        <input type="number" id="shadow-offset-y" value="3" min="-50" max="50" class="input-field w-16 px-2 py-2 rounded">
-                        <span class="muted-text">px</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <span class="body-text text-sm">Blur:</span>
-                        <input type="number" id="shadow-blur" value="8" min="0" max="100" class="input-field w-16 px-2 py-2 rounded">
-                        <span class="muted-text">px</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <span class="body-text text-sm">Color:</span>
+                        <input type="checkbox" id="shadow-enabled" class="accent-brass cursor-pointer" checked>
                         <input type="color" id="shadow-color" value="#000000" class="input-field w-10 h-9 p-1 rounded cursor-pointer">
                         <input type="number" id="shadow-opacity" value="80" min="0" max="100" class="input-field w-16 px-2 py-2 rounded">
                         <span class="muted-text">%</span>
+                    </div>
+                    <div class="flex gap-4 flex-wrap">
+                        <div class="flex items-center gap-2">
+                            <span class="body-text text-sm">X:</span>
+                            <input type="number" id="shadow-offset-x" value="3" min="-50" max="50" class="input-field w-16 px-2 py-2 rounded">
+                            <span class="muted-text">px</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="body-text text-sm">Y:</span>
+                            <input type="number" id="shadow-offset-y" value="3" min="-50" max="50" class="input-field w-16 px-2 py-2 rounded">
+                            <span class="muted-text">px</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="body-text text-sm">Blur:</span>
+                            <input type="number" id="shadow-blur" value="8" min="0" max="100" class="input-field w-16 px-2 py-2 rounded">
+                            <span class="muted-text">px</span>
+                        </div>
                     </div>
                 </div>
             </div>

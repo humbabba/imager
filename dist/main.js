@@ -14,6 +14,10 @@
   var cropPositionContainer = document.getElementById("crop-position-container");
   var overlayOptionsContainer = document.getElementById("overlay-options-container");
   var overlayMarginInput = document.getElementById("overlay-margin");
+  var overlayBlurCheckbox = document.getElementById("overlay-blur");
+  var overlayBgColorInput = document.getElementById("overlay-bg-color");
+  var overlayBgColorInputLabel = document.getElementById("overlay-bg-color-label");
+  var shadowEnabledCheckbox = document.getElementById("shadow-enabled");
   var shadowOffsetXInput = document.getElementById("shadow-offset-x");
   var shadowOffsetYInput = document.getElementById("shadow-offset-y");
   var shadowBlurInput = document.getElementById("shadow-blur");
@@ -136,6 +140,10 @@
   }
   resizeModeInputs.forEach((input) => {
     input.addEventListener("change", updateResizeModeOptions);
+  });
+  overlayBlurCheckbox.addEventListener("change", () => {
+    overlayBgColorInput.classList.toggle("hidden", overlayBlurCheckbox.checked);
+    overlayBgColorInputLabel.classList.toggle("hidden", overlayBlurCheckbox.checked);
   });
   aspectRatioSelect.addEventListener("change", updateCropPositionOptions);
   var sourceFileName = "";
@@ -260,21 +268,26 @@
       const g = parseInt(shadowColorHex.slice(3, 5), 16);
       const b = parseInt(shadowColorHex.slice(5, 7), 16);
       const shadowColor = `rgba(${r}, ${g}, ${b}, ${shadowOpacity})`;
-      let bgWidth, bgHeight, bgX, bgY;
-      if (imgRatio > canvasRatio) {
-        bgHeight = targetHeight;
-        bgWidth = targetHeight * imgRatio;
-        bgX = (targetWidth - bgWidth) / 2;
-        bgY = 0;
+      if (overlayBlurCheckbox.checked) {
+        let bgWidth, bgHeight, bgX, bgY;
+        if (imgRatio > canvasRatio) {
+          bgHeight = targetHeight;
+          bgWidth = targetHeight * imgRatio;
+          bgX = (targetWidth - bgWidth) / 2;
+          bgY = 0;
+        } else {
+          bgWidth = targetWidth;
+          bgHeight = targetWidth / imgRatio;
+          bgX = 0;
+          bgY = (targetHeight - bgHeight) / 2;
+        }
+        ctx.filter = "blur(20px)";
+        ctx.drawImage(uploadedImage, bgX, bgY, bgWidth, bgHeight);
+        ctx.filter = "none";
       } else {
-        bgWidth = targetWidth;
-        bgHeight = targetWidth / imgRatio;
-        bgX = 0;
-        bgY = (targetHeight - bgHeight) / 2;
+        ctx.fillStyle = overlayBgColorInput.value;
+        ctx.fillRect(0, 0, targetWidth, targetHeight);
       }
-      ctx.filter = "blur(20px)";
-      ctx.drawImage(uploadedImage, bgX, bgY, bgWidth, bgHeight);
-      ctx.filter = "none";
       const availableWidth = targetWidth - margin * 2;
       const availableHeight = targetHeight - margin * 2;
       let drawWidth, drawHeight;
@@ -287,7 +300,7 @@
       }
       const drawX = (targetWidth - drawWidth) / 2;
       const drawY = (targetHeight - drawHeight) / 2;
-      if (shadowBlur > 0 || shadowOffsetX !== 0 || shadowOffsetY !== 0) {
+      if (shadowEnabledCheckbox.checked && (shadowBlur > 0 || shadowOffsetX !== 0 || shadowOffsetY !== 0)) {
         ctx.shadowColor = shadowColor;
         ctx.shadowBlur = shadowBlur;
         ctx.shadowOffsetX = shadowOffsetX;
@@ -1054,6 +1067,9 @@
       rm: document.querySelector('input[name="resize-mode"]:checked').value,
       cp: cropPositionSelect.value,
       om: overlayMarginInput.value,
+      ob: overlayBlurCheckbox.checked,
+      obc: overlayBgColorInput.value,
+      se: shadowEnabledCheckbox.checked,
       sox: shadowOffsetXInput.value,
       soy: shadowOffsetYInput.value,
       sb: shadowBlurInput.value,
@@ -1114,6 +1130,13 @@
     }
     if ("cp" in s) cropPositionSelect.value = s.cp;
     if ("om" in s) overlayMarginInput.value = s.om;
+    if ("ob" in s) {
+      overlayBlurCheckbox.checked = s.ob;
+      overlayBgColorInput.classList.toggle("hidden", s.ob);
+      overlayBgColorInputLabel.classList.toggle("hidden", s.ob);
+    }
+    if ("obc" in s) overlayBgColorInput.value = s.obc;
+    if ("se" in s) shadowEnabledCheckbox.checked = s.se;
     if ("sox" in s) shadowOffsetXInput.value = s.sox;
     if ("soy" in s) shadowOffsetYInput.value = s.soy;
     if ("sb" in s) shadowBlurInput.value = s.sb;
@@ -1194,6 +1217,9 @@
     "custom-ratio-h",
     "crop-position",
     "overlay-margin",
+    "overlay-blur",
+    "overlay-bg-color",
+    "shadow-enabled",
     "shadow-offset-x",
     "shadow-offset-y",
     "shadow-blur",

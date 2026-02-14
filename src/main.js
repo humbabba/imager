@@ -12,6 +12,10 @@ const cropPositionSelect = document.getElementById('crop-position');
 const cropPositionContainer = document.getElementById('crop-position-container');
 const overlayOptionsContainer = document.getElementById('overlay-options-container');
 const overlayMarginInput = document.getElementById('overlay-margin');
+const overlayBlurCheckbox = document.getElementById('overlay-blur');
+const overlayBgColorInput = document.getElementById('overlay-bg-color');
+const overlayBgColorInputLabel = document.getElementById('overlay-bg-color-label');
+const shadowEnabledCheckbox = document.getElementById('shadow-enabled');
 const shadowOffsetXInput = document.getElementById('shadow-offset-x');
 const shadowOffsetYInput = document.getElementById('shadow-offset-y');
 const shadowBlurInput = document.getElementById('shadow-blur');
@@ -172,6 +176,11 @@ function updateResizeModeOptions() {
 
 resizeModeInputs.forEach(input => {
     input.addEventListener('change', updateResizeModeOptions);
+});
+
+overlayBlurCheckbox.addEventListener('change', () => {
+    overlayBgColorInput.classList.toggle('hidden', overlayBlurCheckbox.checked);
+    overlayBgColorInputLabel.classList.toggle('hidden', overlayBlurCheckbox.checked);
 });
 
 aspectRatioSelect.addEventListener('change', updateCropPositionOptions);
@@ -335,26 +344,27 @@ processBtn.addEventListener('click', () => {
         const b = parseInt(shadowColorHex.slice(5, 7), 16);
         const shadowColor = `rgba(${r}, ${g}, ${b}, ${shadowOpacity})`;
 
-        // Draw blurred background (cover mode - fills entire canvas)
-        let bgWidth, bgHeight, bgX, bgY;
-        if (imgRatio > canvasRatio) {
-            // Image is wider - fit by height, crop sides
-            bgHeight = targetHeight;
-            bgWidth = targetHeight * imgRatio;
-            bgX = (targetWidth - bgWidth) / 2;
-            bgY = 0;
+        // Draw background (blurred image or solid color)
+        if (overlayBlurCheckbox.checked) {
+            let bgWidth, bgHeight, bgX, bgY;
+            if (imgRatio > canvasRatio) {
+                bgHeight = targetHeight;
+                bgWidth = targetHeight * imgRatio;
+                bgX = (targetWidth - bgWidth) / 2;
+                bgY = 0;
+            } else {
+                bgWidth = targetWidth;
+                bgHeight = targetWidth / imgRatio;
+                bgX = 0;
+                bgY = (targetHeight - bgHeight) / 2;
+            }
+            ctx.filter = 'blur(20px)';
+            ctx.drawImage(uploadedImage, bgX, bgY, bgWidth, bgHeight);
+            ctx.filter = 'none';
         } else {
-            // Image is taller - fit by width, crop top/bottom
-            bgWidth = targetWidth;
-            bgHeight = targetWidth / imgRatio;
-            bgX = 0;
-            bgY = (targetHeight - bgHeight) / 2;
+            ctx.fillStyle = overlayBgColorInput.value;
+            ctx.fillRect(0, 0, targetWidth, targetHeight);
         }
-
-        // Apply blur and draw background
-        ctx.filter = 'blur(20px)';
-        ctx.drawImage(uploadedImage, bgX, bgY, bgWidth, bgHeight);
-        ctx.filter = 'none';
 
         // Calculate scaled image dimensions to fit within canvas (contain mode) with margin
         const availableWidth = targetWidth - (margin * 2);
@@ -371,8 +381,8 @@ processBtn.addEventListener('click', () => {
         const drawX = (targetWidth - drawWidth) / 2;
         const drawY = (targetHeight - drawHeight) / 2;
 
-        // Apply drop shadow if any shadow property is set
-        if (shadowBlur > 0 || shadowOffsetX !== 0 || shadowOffsetY !== 0) {
+        // Apply drop shadow if enabled
+        if (shadowEnabledCheckbox.checked && (shadowBlur > 0 || shadowOffsetX !== 0 || shadowOffsetY !== 0)) {
             ctx.shadowColor = shadowColor;
             ctx.shadowBlur = shadowBlur;
             ctx.shadowOffsetX = shadowOffsetX;
@@ -1314,6 +1324,9 @@ function gatherSettings() {
         rm: document.querySelector('input[name="resize-mode"]:checked').value,
         cp: cropPositionSelect.value,
         om: overlayMarginInput.value,
+        ob: overlayBlurCheckbox.checked,
+        obc: overlayBgColorInput.value,
+        se: shadowEnabledCheckbox.checked,
         sox: shadowOffsetXInput.value,
         soy: shadowOffsetYInput.value,
         sb: shadowBlurInput.value,
@@ -1379,6 +1392,13 @@ function applySettings(s) {
     }
     if ('cp' in s) cropPositionSelect.value = s.cp;
     if ('om' in s) overlayMarginInput.value = s.om;
+    if ('ob' in s) {
+        overlayBlurCheckbox.checked = s.ob;
+        overlayBgColorInput.classList.toggle('hidden', s.ob);
+        overlayBgColorInputLabel.classList.toggle('hidden', s.ob);
+    }
+    if ('obc' in s) overlayBgColorInput.value = s.obc;
+    if ('se' in s) shadowEnabledCheckbox.checked = s.se;
     if ('sox' in s) shadowOffsetXInput.value = s.sox;
     if ('soy' in s) shadowOffsetYInput.value = s.soy;
     if ('sb' in s) shadowBlurInput.value = s.sb;
@@ -1458,8 +1478,8 @@ function loadFromUrl() {
 [
     'output-name', 'keep-name', 'add-timestamp', 'max-width', 'max-height',
     'aspect-ratio', 'custom-ratio-w', 'custom-ratio-h',
-    'crop-position', 'overlay-margin',
-    'shadow-offset-x', 'shadow-offset-y', 'shadow-blur', 'shadow-color', 'shadow-opacity',
+    'crop-position', 'overlay-margin', 'overlay-blur', 'overlay-bg-color',
+    'shadow-enabled', 'shadow-offset-x', 'shadow-offset-y', 'shadow-blur', 'shadow-color', 'shadow-opacity',
     'force-jpg', 'jpg-quality',
     'text-font', 'text-size', 'text-color', 'text-opacity',
     'text-outline', 'text-outline-color', 'text-outline-opacity',
