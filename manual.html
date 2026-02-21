@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Imager User Manual - Sublogical Endeavors</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="dist/output.css">
+    <link rel="stylesheet" href="dist/fonts.css">
+    <style>
+        body { font-family: 'Courier Prime', monospace; }
+        h1, h2, h3, .label-text { font-family: 'Cinzel', serif; }
+        .manual-section { scroll-margin-top: 2rem; }
+        .toc a { transition: color 0.2s; }
+        .toc a:hover { color: #d4a84b; }
+        .kbd {
+            display: inline-block;
+            background: #1a1a1a;
+            border: 1px solid #5a5a5a;
+            border-radius: 3px;
+            padding: 0.1em 0.4em;
+            font-size: 0.85em;
+            color: #f5e6c8;
+            font-family: 'Courier Prime', monospace;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <div class="p-4 lg:p-8 mx-auto" style="max-width: 850px;">
+
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold mb-2 text-brass-light tracking-wider">Sublogical Endeavors</h1>
+            <div class="flex items-center justify-center gap-3 mb-3">
+                <div class="rivet"></div>
+                <div class="h-px w-16 bg-brass-dark"></div>
+                <span class="text-brass uppercase tracking-widest text-sm">Imager Manual</span>
+                <div class="h-px w-16 bg-brass-dark"></div>
+                <div class="rivet"></div>
+            </div>
+            <p class="text-steam text-sm mb-4">Complete guide to image processing and text overlay</p>
+            <a href="index.html" class="text-copper text-sm hover:text-brass transition-colors">&larr; Back to Imager</a>
+        </div>
+
+        <!-- Table of Contents -->
+        <div class="panel p-6 mb-4">
+            <div class="absolute top-2 left-2 rivet"></div>
+            <div class="absolute top-2 right-2 rivet"></div>
+            <div class="absolute bottom-2 left-2 rivet"></div>
+            <div class="absolute bottom-2 right-2 rivet"></div>
+            <h2 class="label-text text-lg mb-4">Table of Contents</h2>
+            <nav class="toc columns-1 sm:columns-2 gap-8 body-text text-sm space-y-1">
+                <p><a href="#overview" class="text-brass hover:text-brass-light">1. Overview</a></p>
+                <p><a href="#getting-started" class="text-brass hover:text-brass-light">2. Getting Started</a></p>
+                <p><a href="#uploading" class="text-brass hover:text-brass-light">3. Uploading Images</a></p>
+                <p><a href="#filename" class="text-brass hover:text-brass-light">4. Output Filename</a></p>
+                <p><a href="#dimensions" class="text-brass hover:text-brass-light">5. Dimensions</a></p>
+                <p><a href="#aspect-ratio" class="text-brass hover:text-brass-light">6. Aspect Ratio</a></p>
+                <p><a href="#resize-mode" class="text-brass hover:text-brass-light">7. Resize Mode</a></p>
+                <p><a href="#crop-mode" class="text-brass hover:text-brass-light">8. Crop Mode</a></p>
+                <p><a href="#overlay-mode" class="text-brass hover:text-brass-light">9. Overlay Mode</a></p>
+                <p><a href="#drop-shadow" class="text-brass hover:text-brass-light">10. Drop Shadow</a></p>
+                <p><a href="#output-format" class="text-brass hover:text-brass-light">11. Output Format</a></p>
+                <p><a href="#processing" class="text-brass hover:text-brass-light">12. Processing &amp; Download</a></p>
+                <p><a href="#text-overlay" class="text-brass hover:text-brass-light">13. Text Overlay</a></p>
+                <p><a href="#text-styling" class="text-brass hover:text-brass-light">14. Text Styling</a></p>
+                <p><a href="#text-effects" class="text-brass hover:text-brass-light">15. Text Effects</a></p>
+                <p><a href="#text-background" class="text-brass hover:text-brass-light">16. Text Background</a></p>
+                <p><a href="#batch" class="text-brass hover:text-brass-light">17. Batch Processing</a></p>
+                <p><a href="#settings" class="text-brass hover:text-brass-light">18. Settings &amp; Sharing</a></p>
+                <p><a href="#tips" class="text-brass hover:text-brass-light">19. Tips &amp; Tricks</a></p>
+            </nav>
+        </div>
+
+        <!-- 1. Overview -->
+        <div id="overview" class="manual-section panel p-6 mb-4">
+            <div class="absolute top-2 left-2 rivet"></div>
+            <div class="absolute top-2 right-2 rivet"></div>
+            <div class="absolute bottom-2 left-2 rivet"></div>
+            <div class="absolute bottom-2 right-2 rivet"></div>
+            <h2 class="label-text text-lg mb-3">1. Overview</h2>
+            <div class="body-text text-sm space-y-4">
+                <p>Sublogical Endeavors Imager is a browser-based image processing tool. All processing happens locally in your browser &mdash; no images are uploaded to any server.</p>
+                <p>Key capabilities:</p>
+                <ul class="list-disc list-inside space-y-1 ml-2">
+                    <li>Resize, crop, and reformat images</li>
+                    <li>Apply aspect ratios with crop or overlay modes</li>
+                    <li>Add text overlays with full styling control</li>
+                    <li>Process multiple images in batch</li>
+                    <li>Save and share your settings via URL</li>
+                </ul>
+                <p>Supported input formats: JPEG, PNG, GIF, WebP, and BMP.</p>
+            </div>
+        </div>
+
+        <!-- 2. Getting Started -->
+        <div id="getting-started" class="manual-section panel p-6 mb-4">
+            <div class="absolute top-2 left-2 rivet"></div>
+            <div class="absolute top-2 right-2 rivet"></div>
+            <div class="absolute bottom-2 left-2 rivet"></div>
+            <div class="absolute bottom-2 right-2 rivet"></div>
+            <h2 class="label-text text-lg mb-3">2. Getting Started</h2>
+            <div class="body-text text-sm space-y-4">
+                <p>The basic workflow is:</p>
+                <ol class="list-decimal list-inside space-y-2 ml-2">
+                    <li><span class="text-brass">Upload</span> &mdash; Select one or more images using the file picker.</li>
+                    <li><span class="text-brass">Configure</span> &mdash; Set your desired output dimensions, aspect ratio, resize mode, and format.</li>
+                    <li><span class="text-brass">Process</span> &mdash; Click the Process button. The source and output previews appear on either side of the control panel.</li>
+                    <li><span class="text-brass">Text (optional)</span> &mdash; Switch to the Text Overlay tab to add styled text to your image.</li>
+                    <li><span class="text-brass">Download</span> &mdash; Download the final result as a single image or a ZIP archive for batch jobs.</li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- 3. Uploading Images -->
+        <div id="uploading" class="manual-section panel p-6 mb-4">
+            <div class="absolute top-2 left-2 rivet"></div>
+            <div class="absolute top-2 right-2 rivet"></div>
+            <div class="absolute bottom-2 left-2 rivet"></div>
+            <div class="absolute bottom-2 right-2 rivet"></div>
+            <h2 class="label-text text-lg mb-3">3. Uploading Images</h2>
+            <div class="body-text text-sm space-y-4">
+                <p>Click the <span class="kbd">Select File(s)</span> button at the top of the Process panel. You can select a single image or multiple images at once using your operating system's file picker.</p>
+                <p>After selecting files, the Process button updates to show the count (e.g., "Process 5 Images"). For a single image it reads "Process Image".</p>
+                <p>The <span class="text-brass">Source</span> preview panel appears on the left showing the first selected image along with its filename, dimensions, and file size.</p>
+            </div>
+        </div>
+
+        <!-- 4. Output Filename -->
+        <div id="filename" class="manual-section panel p-6 mb-4">
+            <div class="absolute top-2 left-2 rivet"></div>
+            <div class="absolute top-2 right-2 rivet"></div>
+            <div class="absolute bottom-2 left-2 rivet"></div>
+            <div class="absolute bottom-2 right-2 rivet"></div>
+            <h2 class="label-text text-lg mb-3">4. Output Filename</h2>
+            <div class="body-text text-sm space-y-4">
+                <p>The <span class="text-brass">Output Filename</span> field lets you set a custom name for your processed image. If left blank, the original filename is used as the base.</p>
+                <p>Two checkboxes modify the naming behavior:</p>
+                <ul class="list-disc list-inside space-y-2 ml-2">
+                    <li><span class="text-brass">Keep name</span> &mdash; When checked, the custom filename you entered persists even when you upload new images. When unchecked, the filename field resets to blank on each new upload.</li>
+                    <li><span class="text-brass">Timestamp</span> &mdash; Enabled by default. Appends a timestamp in the format <span class="text-parchment">YYYY-MM-DD-HH-MM-SS</span> to the output filename, ensuring unique names and preventing overwrites.</li>
+                </ul>
+                <p>Example output: <span class="text-parchment">my-photo - 2026-02-21-14-30-00.jpg</span></p>
+            </div>
+        </div>
+
+        <!-- 5. Dimensions -->
+        <div id="dimensions" class="manual-section panel p-6 mb-4">
+            <div class="absolute top-2 left-2 rivet"></div>
+            <div class="absolute top-2 right-2 rivet"></div>
+            <div class="absolute bottom-2 left-2 rivet"></div>
+            <div class="absolute bottom-2 right-2 rivet"></div>
+            <h2 class="label-text text-lg mb-3">5. Dimensions</h2>
+            <div class="body-text text-sm space-y-4">
+                <p>Set maximum output dimensions in pixels:</p>
+                <ul class="list-disc list-inside space-y-2 ml-2">
+                    <li><span class="text-brass">Max width</span> &mdash; The output image will not exceed this width. Leave blank for no width constraint.</li>
+                    <li><span class="text-brass">Max height</span> &mdash; The output image will not exceed this height. Leave blank for no height constraint.</li>
+                </ul>
+                <p>When both are set, the image is scaled to fit within those bounds while maintaining its proportions (unless overridden by an aspect ratio).</p>
+                <p>When neither is set, the image retains its original dimensions (cropped or padded to fit the aspect ratio if one is selected).</p>
+            </div>
+        </div>
+
+        <!-- 6. Aspect Ratio -->
+        <div id="aspect-ratio" class="manual-section panel p-6 mb-4">
+            <div class="absolute top-2 left-2 rivet"></div>
+            <div class="absolute top-2 right-2 rivet"></div>
+            <div class="absolute bottom-2 left-2 rivet"></div>
+            <div class="absolute bottom-2 right-2 rivet"></div>
+            <h2 class="label-text text-lg mb-3">6. Aspect Ratio</h2>
+            <div class="body-text text-sm space-y-4">
+                <p>Choose a preset ratio from the dropdown or enter a custom one:</p>
+                <ul class="list-disc list-inside space-y-1 ml-2">
+                    <li><span class="text-brass">None</span> &mdash; Keep the image's natural proportions</li>
+                    <li><span class="text-brass">1:1</span> &mdash; Square</li>
+                    <li><span class="text-brass">4:3</span> &mdash; Classic photo / monitor</li>
+                    <li><span class="text-brass">3:2</span> &mdash; Standard DSLR photo</li>
+                    <li><span class="text-brass">16:9</span> &mdash; Widescreen / video</li>
+                    <li><span class="text-brass">9:16</span> &mdash; Vertical / mobile stories</li>
+                    <li><span class="text-brass">3:4</span> &mdash; Portrait</li>
+                    <li><span class="text-brass">2:3</span> &mdash; Tall portrait</li>
+                </ul>
+                <p>For custom ratios, enter width and height values in the <span class="text-brass">W</span> and <span class="text-brass">H</span> fields. Selecting a custom ratio clears the dropdown and vice versa.</p>
+                <p>When an aspect ratio is selected, the resize mode (Crop or Overlay) determines how the image is adapted to fit.</p>
+            </div>
+        </div>
+
+        <!-- 7. Resize Mode -->
+        <div id="resize-mode" class="manual-section panel p-6 mb-4">
+            <div class="absolute top-2 left-2 rivet"></div>
+            <div class="absolute top-2 right-2 rivet"></div>
+            <div class="absolute bottom-2 left-2 rivet"></div>
+            <div class="absolute bottom-2 right-2 rivet"></div>
+            <h2 class="label-text text-lg mb-3">7. Resize Mode</h2>
+            <div class="body-text text-sm space-y-4">
+                <p>When an aspect ratio is selected, you choose how the image is resized to match:</p>
+                <ul class="list-disc list-inside space-y-2 ml-2">
+                    <li><span class="text-brass">Crop</span> &mdash; Fills the target area completely by scaling the image up and trimming the excess. No empty space. See <a href="#crop-mode" class="text-copper hover:text-brass">Crop Mode</a>.</li>
+                    <li><span class="text-brass">Overlay</span> &mdash; Fits the entire image inside the target area with a decorative background filling the remaining space. See <a href="#overlay-mode" class="text-copper hover:text-brass">Overlay Mode</a>.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 8. Crop Mode -->
+        <div id="crop-mode" class="manual-section panel p-6 mb-4">
+            <div class="absolute top-2 left-2 rivet"></div>
+            <div class="absolute top-2 right-2 rivet"></div>
+            <div class="absolute bottom-2 left-2 rivet"></div>
+            <div class="absolute bottom-2 right-2 rivet"></div>
+            <h2 class="label-text text-lg mb-3">8. Crop Mode</h2>
+            <div class="body-text text-sm space-y-4">
+                <p>When Crop is selected, a <span class="text-brass">Crop position</span> dropdown appears with options that vary based on the aspect ratio and source image orientation:</p>
+                <ul class="list-disc list-inside space-y-1 ml-2">
+                    <li><span class="text-brass">Center crop</span> &mdash; Always available. Crops equally from both sides.</li>
+                    <li><span class="text-brass">Top crop</span> &mdash; Keeps the top of the image, trims the bottom. Available when the image is taller than the target ratio.</li>
+                    <li><span class="text-brass">Bottom crop</span> &mdash; Keeps the bottom, trims the top.</li>
+                    <li><span class="text-brass">Left crop</span> &mdash; Keeps the left side, trims the right. Available when the image is wider than the target ratio.</li>
+                    <li><span class="text-brass">Right crop</span> &mdash; Keeps the right side, trims the left.</li>
+                </ul>
+                <p>Crop mode is ideal when you want the output to be completely filled with image content and don't mind losing some of the edges.</p>
+            </div>
+        </div>
+
+        <!-- 9. Overlay Mode -->
+        <div id="overlay-mode" class="manual-section panel p-6 mb-4">
+            <div class="absolute top-2 left-2 rivet"></div>
+            <div class="absolute top-2 right-2 rivet"></div>
+            <div class="absolute bottom-2 left-2 rivet"></div>
+            <div class="absolute bottom-2 right-2 rivet"></div>
+            <h2 class="label-text text-lg mb-3">9. Overlay Mode</h2>
+            <div class="body-text text-sm space-y-4">
+                <p>When Overlay is selected, additional background options appear:</p>
+                <ul class="list-disc list-inside space-y-2 ml-2">
+                    <li><span class="text-brass">Margin</span> &mdash; Space between the image and the canvas edge, as a percentage (0&ndash;50%). Higher values make the centered image smaller within the frame.</li>
+                    <li><span class="text-brass">Blur</span> &mdash; When checked (default), the background is a blurred, scaled-up version of the source image, creating a pleasing "frosted glass" effect.</li>
+                    <li><span class="text-brass">Solid color</span> &mdash; When Blur is unchecked, a color picker appears. Choose any solid color for the background.</li>
+                </ul>
+                <p>Overlay mode preserves the entire image and is ideal for fitting photos into standardized dimensions (e.g., social media posts) without losing any content.</p>
+            </div>
+        </div>
+
+        <!-- 10. Drop Shadow -->
+        <div id="drop-shadow" class="manual-section panel p-6 mb-4">
+            <div class="absolute top-2 left-2 rivet"></div>
+            <div class="absolute top-2 right-2 rivet"></div>
+            <div class="absolute bottom-2 left-2 rivet"></div>
+            <div class="absolute bottom-2 right-2 rivet"></div>
+            <h2 class="label-text text-lg mb-3">10. Drop Shadow (Overlay Mode)</h2>
+            <div class="body-text text-sm space-y-4">
+                <p>Available only in Overlay mode. Adds a shadow behind the centered image to give it depth against the background.</p>
+                <ul class="list-disc list-inside space-y-2 ml-2">
+                    <li><span class="text-brass">Enable checkbox</span> &mdash; Toggle the shadow on or off (enabled by default).</li>
+                    <li><span class="text-brass">Color</span> &mdash; Click the color swatch to pick a shadow color.</li>
+                    <li><span class="text-brass">Opacity</span> &mdash; 0% (invisible) to 100% (fully opaque). Default: 80%.</li>
+                    <li><span class="text-brass">X offset</span> &mdash; Horizontal shift in pixels (-50 to 50). Positive values move the shadow right.</li>
+                    <li><span class="text-brass">Y offset</span> &mdash; Vertical shift in pixels (-50 to 50). Positive values move the shadow down.</li>
+                    <li><span class="text-brass">Blur</span> &mdash; Shadow blur radius in pixels (0&ndash;100). Higher values create a softer, more diffused shadow.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 11. Output Format -->
+        <div id="output-format" class="manual-section panel p-6 mb-4">
+            <div class="absolute top-2 left-2 rivet"></div>
+            <div class="absolute top-2 right-2 rivet"></div>
+            <div class="absolute bottom-2 left-2 rivet"></div>
+            <div class="absolute bottom-2 right-2 rivet"></div>
+            <h2 class="label-text text-lg mb-3">11. Output Format</h2>
+            <div class="body-text text-sm space-y-4">
+                <p>Controls the file format and compression of the output image:</p>
+                <ul class="list-disc list-inside space-y-2 ml-2">
+                    <li><span class="text-brass">Force JPG output</span> &mdash; When checked (default), all images are converted to JPEG regardless of input format. This typically results in smaller file sizes. When unchecked, the output matches the input format (PNG stays PNG, etc.).</li>
+                    <li><span class="text-brass">Quality</span> &mdash; JPEG compression quality from 1% (smallest file, most artifacts) to 100% (largest file, best quality). Default: 80%. Only visible when the output will be JPEG.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 12. Processing & Download -->
+        <div id="processing" class="manual-section panel p-6 mb-4">
+            <div class="absolute top-2 left-2 rivet"></div>
+            <div class="absolute top-2 right-2 rivet"></div>
+            <div class="absolute bottom-2 left-2 rivet"></div>
+            <div class="absolute bottom-2 right-2 rivet"></div>
+            <h2 class="label-text text-lg mb-3">12. Processing &amp; Download</h2>
+            <div class="body-text text-sm space-y-4">
+                <p>Click the <span class="kbd">Process Image</span> button to apply your settings. The button is disabled until at least one image is selected.</p>
+                <p>After processing, two preview panels appear:</p>
+                <ul class="list-disc list-inside space-y-2 ml-2">
+                    <li><span class="text-brass">Source panel</span> (left) &mdash; Shows the original image with its filename, dimensions, and file size.</li>
+                    <li><span class="text-brass">Output panel</span> (right) &mdash; Shows the processed result with updated info. Contains:
+                        <ul class="list-disc list-inside ml-4 mt-1 space-y-1">
+                            <li><span class="text-brass">Download</span> &mdash; Saves the image to your computer.</li>
+                            <li><span class="text-brass">Preview</span> (<span class="text-parchment">&loz;</span>) &mdash; Opens the full-size image in a new browser window.</li>
+                        </ul>
+                    </li>
+                </ul>
+                <p>The <span class="text-brass">Text Overlay</span> tab also becomes available after processing, indicated by the tab bar appearing above the panel.</p>
+            </div>
+        </div>
+
+        <!-- 13. Text Overlay -->
+        <div id="text-overlay" class="manual-section panel p-6 mb-4">
+            <div class="absolute top-2 left-2 rivet"></div>
+            <div class="absolute top-2 right-2 rivet"></div>
+            <div class="absolute bottom-2 left-2 rivet"></div>
+            <div class="absolute bottom-2 right-2 rivet"></div>
+            <h2 class="label-text text-lg mb-3">13. Text Overlay</h2>
+            <div class="body-text text-sm space-y-4">
+                <p>The Text Overlay view lets you add styled text to your processed image. Switch to it using the <span class="text-brass">Text Overlay</span> tab.</p>
+                <p>The layout has two main areas:</p>
+                <ul class="list-disc list-inside space-y-2 ml-2">
+                    <li><span class="text-brass">Left panel</span> &mdash; Text items list and styling controls.</li>
+                    <li><span class="text-brass">Center canvas</span> &mdash; Live preview of the image with all text items. Click anywhere on the canvas to add a new text item at that position.</li>
+                </ul>
+                <h3 class="text-brass text-sm mt-4 mb-2">Managing Text Items</h3>
+                <ul class="list-disc list-inside space-y-1 ml-2">
+                    <li><span class="text-brass">Add</span> &mdash; Click <span class="kbd">+ Add Text</span> or click directly on the canvas.</li>
+                    <li><span class="text-brass">Select</span> &mdash; Click a text item in the list to select it for editing.</li>
+                    <li><span class="text-brass">Move</span> &mdash; Drag a selected text item on the canvas to reposition it.</li>
+                    <li><span class="text-brass">Delete</span> &mdash; Click the <span class="text-parchment">&times;</span> button on a text item or use the Delete button in the style controls.</li>
+                </ul>
+                <p class="mt-2">An output bar below the canvas shows the file info and provides Download and Preview buttons for the final composited image. You can also change the output filename here.</p>
+            </div>
+        </div>
+
+        <!-- 14. Text Styling -->
+        <div id="text-styling" class="manual-section panel p-6 mb-4">
+            <div class="absolute top-2 left-2 rivet"></div>
+            <div class="absolute top-2 right-2 rivet"></div>
+            <div class="absolute bottom-2 left-2 rivet"></div>
+            <div class="absolute bottom-2 right-2 rivet"></div>
+            <h2 class="label-text text-lg mb-3">14. Text Styling</h2>
+            <div class="body-text text-sm space-y-4">
+                <p>When a text item is selected, the style controls become available:</p>
+                <ul class="list-disc list-inside space-y-2 ml-2">
+                    <li><span class="text-brass">Text</span> &mdash; Edit the text content. Changes appear live on the canvas.</li>
+                    <li><span class="text-brass">Font</span> &mdash; Choose from 45+ fonts organized into five categories:
+                        <ul class="list-disc list-inside ml-4 mt-1 space-y-1">
+                            <li><span class="text-brass">Sans-Serif</span> &mdash; Arial, Archivo, Exo 2, Inter, Lato, Montserrat, Nunito, Open Sans, Poppins, Raleway, Roboto, Ubuntu, Verdana, Work Sans</li>
+                            <li><span class="text-brass">Serif</span> &mdash; Bitter, Cinzel, Crimson Text, Georgia, Lora, Merriweather, Playfair Display, PT Serif, Source Serif Pro, Times New Roman</li>
+                            <li><span class="text-brass">Display</span> &mdash; Anton, Bangers, Bebas Neue, Fredoka, Lobster, Orbitron, Oswald, Permanent Marker, Righteous, Staatliches, Teko</li>
+                            <li><span class="text-brass">Handwriting</span> &mdash; Caveat, Comic Neue, Courgette, Dancing Script, Great Vibes, Indie Flower, Pacifico, Satisfy</li>
+                            <li><span class="text-brass">Monospace</span> &mdash; Courier New, Courier Prime, Roboto Mono, Source Code Pro</li>
+                        </ul>
+                    </li>
+                    <li><span class="text-brass">Size</span> &mdash; Font size in pixels (8&ndash;500).</li>
+                    <li><span class="text-brass">Color</span> &mdash; Click the color swatch to pick any text color.</li>
+                    <li><span class="text-brass">Style toggles</span>:
+                        <ul class="list-disc list-inside ml-4 mt-1 space-y-1">
+                            <li><span class="kbd">B</span> &mdash; Bold</li>
+                            <li><span class="kbd">I</span> &mdash; Italic</li>
+                            <li><span class="kbd">U</span> &mdash; Underline</li>
+                            <li><span class="kbd">AA</span> &mdash; Uppercase (converts all text to capitals)</li>
+                        </ul>
+                    </li>
+                    <li><span class="text-brass">Opacity</span> &mdash; Slider from 0% (invisible) to 100% (fully opaque).</li>
+                </ul>
+                <h3 class="text-brass text-sm mt-4 mb-2">Positioning</h3>
+                <ul class="list-disc list-inside space-y-1 ml-2">
+                    <li><span class="kbd">&harr; H</span> &mdash; Centers the text item horizontally on the canvas.</li>
+                    <li><span class="kbd">&updownarrow; V</span> &mdash; Centers the text item vertically on the canvas.</li>
+                </ul>
+                <p>Text positions are stored as percentages, so they scale correctly if the image dimensions change.</p>
+            </div>
+        </div>
+
+        <!-- 15. Text Effects -->
+        <div id="text-effects" class="manual-section panel p-6 mb-4">
+            <div class="absolute top-2 left-2 rivet"></div>
+            <div class="absolute top-2 right-2 rivet"></div>
+            <div class="absolute bottom-2 left-2 rivet"></div>
+            <div class="absolute bottom-2 right-2 rivet"></div>
+            <h2 class="label-text text-lg mb-3">15. Text Effects</h2>
+            <div class="body-text text-sm space-y-4">
+                <h3 class="text-brass text-sm mb-2">Outline</h3>
+                <p>Adds a stroke around the text characters.</p>
+                <ul class="list-disc list-inside space-y-1 ml-2">
+                    <li><span class="text-brass">Enable</span> &mdash; Check the box to turn on the outline.</li>
+                    <li><span class="text-brass">Color</span> &mdash; Pick the outline color.</li>
+                    <li><span class="text-brass">Opacity</span> &mdash; 0&ndash;100%. Controls outline transparency independently from the text.</li>
+                </ul>
+
+                <h3 class="text-brass text-sm mt-4 mb-2">Drop Shadow</h3>
+                <p>Adds a shadow behind the text for depth and readability.</p>
+                <ul class="list-disc list-inside space-y-1 ml-2">
+                    <li><span class="text-brass">Enable</span> &mdash; Check the box to turn on the shadow.</li>
+                    <li><span class="text-brass">Color</span> &mdash; Pick the shadow color.</li>
+                    <li><span class="text-brass">Opacity</span> &mdash; 0&ndash;100%.</li>
+                    <li><span class="text-brass">X / Y</span> &mdash; Shadow offset in pixels (-50 to 50).</li>
+                    <li><span class="text-brass">B (Blur)</span> &mdash; Blur radius (0&ndash;100px).</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 16. Text Background -->
+        <div id="text-background" class="manual-section panel p-6 mb-4">
+            <div class="absolute top-2 left-2 rivet"></div>
+            <div class="absolute top-2 right-2 rivet"></div>
+            <div class="absolute bottom-2 left-2 rivet"></div>
+            <div class="absolute bottom-2 right-2 rivet"></div>
+            <h2 class="label-text text-lg mb-3">16. Text Background</h2>
+            <div class="body-text text-sm space-y-4">
+                <p>Adds a colored rectangle behind the text, useful for ensuring readability over busy images.</p>
+                <ul class="list-disc list-inside space-y-2 ml-2">
+                    <li><span class="text-brass">Enable</span> &mdash; Check the box to show the background.</li>
+                    <li><span class="text-brass">Color</span> &mdash; Background fill color.</li>
+                    <li><span class="text-brass">Opacity</span> &mdash; 0&ndash;100%. Semi-transparent backgrounds let the image show through.</li>
+                    <li><span class="text-brass">Pad (Padding)</span> &mdash; Space between the text and the edge of the background rectangle (0&ndash;200px).</li>
+                    <li><span class="text-brass">W (Width)</span> &mdash; Background width as a percentage of the canvas (0&ndash;100%). When set to 0, the background auto-sizes to fit the text.</li>
+                    <li><span class="text-brass">Off (Offset X)</span> &mdash; Horizontal offset of the background (-500 to 500px). Shifts the background left or right relative to the text.</li>
+                    <li><span class="text-brass">Slant L / Slant R</span> &mdash; Skew the left and right edges of the background independently (-100 to 100). Creates parallelogram or trapezoid shapes for dynamic, angled banner effects.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 17. Batch Processing -->
+        <div id="batch" class="manual-section panel p-6 mb-4">
+            <div class="absolute top-2 left-2 rivet"></div>
+            <div class="absolute top-2 right-2 rivet"></div>
+            <div class="absolute bottom-2 left-2 rivet"></div>
+            <div class="absolute bottom-2 right-2 rivet"></div>
+            <h2 class="label-text text-lg mb-3">17. Batch Processing</h2>
+            <div class="body-text text-sm space-y-4">
+                <p>Select multiple files to enable batch mode. All images are processed sequentially with the same settings.</p>
+                <ul class="list-disc list-inside space-y-2 ml-2">
+                    <li>The Process button shows the total count (e.g., <span class="kbd">Process 10 Images</span>).</li>
+                    <li>A progress indicator appears during processing ("Processing 3 of 10...").</li>
+                    <li>Text overlays, if configured, are applied to every image in the batch.</li>
+                    <li>The Download button changes to <span class="kbd">Download ZIP</span>, packaging all processed images into a single archive.</li>
+                    <li>Filenames are automatically deduplicated within the ZIP to prevent conflicts.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 18. Settings & Sharing -->
+        <div id="settings" class="manual-section panel p-6 mb-4">
+            <div class="absolute top-2 left-2 rivet"></div>
+            <div class="absolute top-2 right-2 rivet"></div>
+            <div class="absolute bottom-2 left-2 rivet"></div>
+            <div class="absolute bottom-2 right-2 rivet"></div>
+            <h2 class="label-text text-lg mb-3">18. Settings &amp; Sharing</h2>
+            <div class="body-text text-sm space-y-4">
+                <h3 class="text-brass text-sm mb-2">Automatic Persistence</h3>
+                <p>All settings are automatically saved to your browser's local storage as you change them. When you return to Imager, your last-used settings are restored automatically.</p>
+
+                <h3 class="text-brass text-sm mt-4 mb-2">Sharing via URL</h3>
+                <p>Click the <span class="kbd">Copy Settings Link</span> button in the footer to copy a URL that encodes all your current settings. Share this URL with others &mdash; when they open it, the settings are automatically applied and they can immediately begin processing images with your configuration.</p>
+                <p>Settings loaded from a URL take priority over locally saved settings.</p>
+            </div>
+        </div>
+
+        <!-- 19. Tips & Tricks -->
+        <div id="tips" class="manual-section panel p-6 mb-4">
+            <div class="absolute top-2 left-2 rivet"></div>
+            <div class="absolute top-2 right-2 rivet"></div>
+            <div class="absolute bottom-2 left-2 rivet"></div>
+            <div class="absolute bottom-2 right-2 rivet"></div>
+            <h2 class="label-text text-lg mb-3">19. Tips &amp; Tricks</h2>
+            <div class="body-text text-sm space-y-4">
+                <ul class="list-disc list-inside space-y-3 ml-2">
+                    <li><span class="text-brass">Social media banners</span> &mdash; Use 16:9 aspect ratio with Overlay mode, Blur enabled, and a 3&ndash;5% margin for professional-looking cover images.</li>
+                    <li><span class="text-brass">Thumbnail generation</span> &mdash; Set a Max width of 300px, choose 1:1 (Square), and Crop mode with Center crop for consistent thumbnails.</li>
+                    <li><span class="text-brass">Watermarking</span> &mdash; Add a text overlay with low opacity (20&ndash;30%) and position it in a corner. Use a light color with an outline for visibility on any background.</li>
+                    <li><span class="text-brass">Title cards</span> &mdash; Use the text background feature with slant values to create angled banner effects behind your title text.</li>
+                    <li><span class="text-brass">Consistent branding</span> &mdash; Set up your preferred settings once, then use Copy Settings Link to save the URL as a bookmark. Use it every time for uniform results.</li>
+                    <li><span class="text-brass">File size reduction</span> &mdash; Force JPG output at 70&ndash;80% quality. Most images look identical but are significantly smaller.</li>
+                    <li><span class="text-brass">Privacy</span> &mdash; All processing happens in your browser. Images never leave your machine.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="mt-8 text-center">
+            <div class="flex items-center justify-center gap-2">
+                <div class="rivet"></div>
+                <div class="h-px w-16 bg-iron-light"></div>
+                <a href="index.html" class="btn-secondary px-4 py-1.5 rounded text-xs whitespace-nowrap inline-block no-underline">
+                    &larr; Back to Imager
+                </a>
+                <div class="h-px w-16 bg-iron-light"></div>
+                <div class="rivet"></div>
+            </div>
+            <p class="text-iron-light text-xs mt-3 uppercase tracking-wider">Est. 2026</p>
+        </div>
+    </div>
+</body>
+</html>
