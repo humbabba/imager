@@ -4,41 +4,47 @@ header('Content-Type: application/json');
 $dataDir = __DIR__ . '/../data';
 $dbPath  = $dataDir . '/log.db';
 
-// Auto-create data directory
-if (!is_dir($dataDir)) {
-    mkdir($dataDir, 0755, true);
-}
-
-// Open/create SQLite database via PDO
 try {
+    // Auto-create data directory
+    if (!is_dir($dataDir)) {
+        if (!mkdir($dataDir, 0755, true)) {
+            throw new RuntimeException("Failed to create data directory: $dataDir");
+        }
+    }
+
+    if (!is_writable($dataDir)) {
+        throw new RuntimeException("Data directory is not writable: $dataDir");
+    }
+
+    // Open/create SQLite database via PDO
     $db = new PDO("sqlite:$dbPath");
     $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     $db->exec('PRAGMA journal_mode = WAL');
     $db->exec('PRAGMA busy_timeout = 5000');
-} catch (PDOException $e) {
+
+    // Auto-create table
+    $db->exec("
+        CREATE TABLE IF NOT EXISTS sessions (
+            id              INTEGER PRIMARY KEY AUTOINCREMENT,
+            session_id      TEXT NOT NULL UNIQUE,
+            created_at      TEXT NOT NULL DEFAULT (datetime('now')),
+            updated_at      TEXT NOT NULL DEFAULT (datetime('now')),
+            image_count     INTEGER NOT NULL DEFAULT 0,
+            max_width       INTEGER,
+            max_height      INTEGER,
+            aspect_ratio    TEXT DEFAULT '',
+            resize_mode     TEXT DEFAULT 'crop',
+            text_added      INTEGER NOT NULL DEFAULT 0,
+            clicks_process  INTEGER NOT NULL DEFAULT 0,
+            clicks_preview  INTEGER NOT NULL DEFAULT 0,
+            clicks_download INTEGER NOT NULL DEFAULT 0
+        )
+    ");
+} catch (Exception $e) {
     http_response_code(500);
-    echo json_encode(['error' => 'Database connection failed']);
+    echo json_encode(['error' => $e->getMessage()]);
     exit;
 }
-
-// Auto-create table
-$db->exec("
-    CREATE TABLE IF NOT EXISTS sessions (
-        id              INTEGER PRIMARY KEY AUTOINCREMENT,
-        session_id      TEXT NOT NULL UNIQUE,
-        created_at      TEXT NOT NULL DEFAULT (datetime('now')),
-        updated_at      TEXT NOT NULL DEFAULT (datetime('now')),
-        image_count     INTEGER NOT NULL DEFAULT 0,
-        max_width       INTEGER,
-        max_height      INTEGER,
-        aspect_ratio    TEXT DEFAULT '',
-        resize_mode     TEXT DEFAULT 'crop',
-        text_added      INTEGER NOT NULL DEFAULT 0,
-        clicks_process  INTEGER NOT NULL DEFAULT 0,
-        clicks_preview  INTEGER NOT NULL DEFAULT 0,
-        clicks_download INTEGER NOT NULL DEFAULT 0
-    )
-");
 
 $method = $_SERVER['REQUEST_METHOD'];
 
