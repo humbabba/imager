@@ -1,6 +1,4 @@
 <?php
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
 header('Content-Type: application/json');
 
 $dataDir = __DIR__ . '/../data';
@@ -58,23 +56,7 @@ if ($method === 'POST') {
         exit;
     }
 
-    $stmt = $db->prepare("
-        INSERT INTO sessions (session_id, image_count, max_width, max_height, aspect_ratio, resize_mode, text_added, clicks_process, clicks_preview, clicks_download)
-        VALUES (:sid, :ic, :mw, :mh, :ar, :rm, :ta, :cp, :cpv, :cd)
-        ON CONFLICT(session_id) DO UPDATE SET
-            updated_at      = datetime('now'),
-            image_count     = :ic,
-            max_width       = :mw,
-            max_height      = :mh,
-            aspect_ratio    = :ar,
-            resize_mode     = :rm,
-            text_added      = :ta,
-            clicks_process  = :cp,
-            clicks_preview  = :cpv,
-            clicks_download = :cd
-    ");
-
-    $stmt->execute([
+    $params = [
         ':sid' => $input['session_id'],
         ':ic'  => $input['image_count'] ?? 0,
         ':mw'  => $input['max_width'] ?? null,
@@ -85,7 +67,32 @@ if ($method === 'POST') {
         ':cp'  => $input['clicks_process'] ?? 0,
         ':cpv' => $input['clicks_preview'] ?? 0,
         ':cd'  => $input['clicks_download'] ?? 0,
-    ]);
+    ];
+
+    // Try UPDATE first, then INSERT if no row existed (compatible with older SQLite)
+    $stmt = $db->prepare("
+        UPDATE sessions SET
+            updated_at      = datetime('now'),
+            image_count     = :ic,
+            max_width       = :mw,
+            max_height      = :mh,
+            aspect_ratio    = :ar,
+            resize_mode     = :rm,
+            text_added      = :ta,
+            clicks_process  = :cp,
+            clicks_preview  = :cpv,
+            clicks_download = :cd
+        WHERE session_id = :sid
+    ");
+    $stmt->execute($params);
+
+    if ($stmt->rowCount() === 0) {
+        $stmt = $db->prepare("
+            INSERT INTO sessions (session_id, image_count, max_width, max_height, aspect_ratio, resize_mode, text_added, clicks_process, clicks_preview, clicks_download)
+            VALUES (:sid, :ic, :mw, :mh, :ar, :rm, :ta, :cp, :cpv, :cd)
+        ");
+        $stmt->execute($params);
+    }
 
     echo json_encode(['ok' => true]);
 
