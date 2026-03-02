@@ -27,6 +27,56 @@ const forceJpgCheckbox = document.getElementById('force-jpg');
 const batchProgress = document.getElementById('batch-progress');
 const batchProgressText = document.getElementById('batch-progress-text');
 
+// Session tracking
+let sessionId = null;
+let clickCounts = null;
+
+function startSession() {
+    sessionId = Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
+    clickCounts = { process: 0, preview: 0, download: 0 };
+}
+
+function buildLogPayload() {
+    return {
+        session_id: sessionId,
+        image_count: uploadedFiles.length,
+        max_width: parseInt(maxWidthInput.value) || null,
+        max_height: parseInt(maxHeightInput.value) || null,
+        aspect_ratio: getAspectRatio(),
+        resize_mode: document.querySelector('input[name="resize-mode"]:checked').value,
+        text_added: textItems ? textItems.length : 0,
+        clicks_process: clickCounts.process,
+        clicks_preview: clickCounts.preview,
+        clicks_download: clickCounts.download
+    };
+}
+
+function finalizeSession(useBeacon) {
+    if (!sessionId) return;
+    const data = buildLogPayload();
+    if (useBeacon) {
+        navigator.sendBeacon('api/log.php', new Blob([JSON.stringify(data)], { type: 'application/json' }));
+    } else {
+        fetch('api/log.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        }).catch(() => {});
+    }
+    sessionId = null;
+    clickCounts = null;
+}
+
+function sendLog() {
+    if (!sessionId) return;
+    const data = buildLogPayload();
+    fetch('api/log.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    }).catch(() => {});
+}
+
 // Toggle quality visibility based on force JPG checkbox
 function updateQualityVisibility() {
     const isJpg = sourceMimeType === 'image/jpeg';
@@ -232,6 +282,8 @@ fileInput.addEventListener('change', (e) => {
     const img = new Image();
     const objectUrl = URL.createObjectURL(file);
     img.onload = () => {
+        finalizeSession();
+        startSession();
         uploadedImage = img;
         processBtn.disabled = false;
         updateCropPositionOptions();
@@ -450,6 +502,7 @@ processBtn.addEventListener('click', async () => {
     if (!uploadedImage || isProcessing) return;
 
     isProcessing = true;
+    if (clickCounts) clickCounts.process++;
     processBtn.disabled = true;
     processedImages = [];
 
@@ -535,6 +588,7 @@ processBtn.addEventListener('click', async () => {
 
     isProcessing = false;
     processBtn.disabled = false;
+    sendLog();
 });
 
 // Track current tab for download/preview
@@ -601,6 +655,8 @@ function dataUrlToBlob(dataUrl) {
 
 // Unified download handler for single or batch
 async function handleDownload() {
+    if (clickCounts) clickCounts.download++;
+    sendLog();
     if (processedImages.length <= 1) {
         // Single image — use existing behavior
         const { dataUrl, filename } = getCurrentOutputData();
@@ -679,6 +735,8 @@ downloadBtn.addEventListener('click', handleDownload);
 let previewWindow = null;
 
 function updatePreviewWindow() {
+    if (clickCounts) clickCounts.preview++;
+    sendLog();
     if (!previewWindow || previewWindow.closed) {
         previewWindow = window.open('', 'imager-preview', 'menubar=no,toolbar=no,location=no,status=no');
     }
@@ -1712,6 +1770,14 @@ if (copySettingsBtn) {
         }
     });
 }
+
+// Finalize session on tab close or reload via sendBeacon
+window.addEventListener('pagehide', () => {
+    finalizeSession(true);
+});
+window.addEventListener('beforeunload', () => {
+    finalizeSession(true);
+});
 
 // On page load: URL params > localStorage > defaults
 (function initSettings() {

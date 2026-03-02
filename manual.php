@@ -1,3 +1,4 @@
+<?php require_once 'version.php'; ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,8 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Imager User Manual - Sublogical Endeavors</title>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <link rel="stylesheet" href="dist/output.css">
-    <link rel="stylesheet" href="dist/fonts.css">
+    <link rel="stylesheet" href="dist/output.css?v=<?= $version ?>">
+    <link rel="stylesheet" href="dist/fonts.css?v=<?= $version ?>">
     <style>
         body { font-family: 'Courier Prime', monospace; }
         h1, h2, h3, .label-text { font-family: 'Cinzel', serif; }
@@ -39,7 +40,7 @@
                 <div class="rivet"></div>
             </div>
             <p class="text-steam text-sm mb-4">Complete guide to image processing and text overlay</p>
-            <a href="index.html" class="text-copper text-sm hover:text-brass transition-colors">&larr; Back to Imager</a>
+            <a href="./" class="text-copper text-sm hover:text-brass transition-colors">&larr; Back to Imager</a>
         </div>
 
         <!-- Table of Contents -->
@@ -475,7 +476,7 @@
             <div class="flex items-center justify-center gap-2">
                 <div class="rivet"></div>
                 <div class="h-px w-16 bg-iron-light"></div>
-                <a href="index.html" class="btn-secondary px-4 py-1.5 rounded text-xs whitespace-nowrap inline-block no-underline">
+                <a href="./" class="btn-secondary px-4 py-1.5 rounded text-xs whitespace-nowrap inline-block no-underline">
                     &larr; Back to Imager
                 </a>
                 <div class="h-px w-16 bg-iron-light"></div>

@@ -28,6 +28,52 @@
   var forceJpgCheckbox = document.getElementById("force-jpg");
   var batchProgress = document.getElementById("batch-progress");
   var batchProgressText = document.getElementById("batch-progress-text");
+  var sessionId = null;
+  var clickCounts = null;
+  function startSession() {
+    sessionId = Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
+    clickCounts = { process: 0, preview: 0, download: 0 };
+  }
+  function buildLogPayload() {
+    return {
+      session_id: sessionId,
+      image_count: uploadedFiles.length,
+      max_width: parseInt(maxWidthInput.value) || null,
+      max_height: parseInt(maxHeightInput.value) || null,
+      aspect_ratio: getAspectRatio(),
+      resize_mode: document.querySelector('input[name="resize-mode"]:checked').value,
+      text_added: textItems ? textItems.length : 0,
+      clicks_process: clickCounts.process,
+      clicks_preview: clickCounts.preview,
+      clicks_download: clickCounts.download
+    };
+  }
+  function finalizeSession(useBeacon) {
+    if (!sessionId) return;
+    const data = buildLogPayload();
+    if (useBeacon) {
+      navigator.sendBeacon("api/log.php", new Blob([JSON.stringify(data)], { type: "application/json" }));
+    } else {
+      fetch("api/log.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      }).catch(() => {
+      });
+    }
+    sessionId = null;
+    clickCounts = null;
+  }
+  function sendLog() {
+    if (!sessionId) return;
+    const data = buildLogPayload();
+    fetch("api/log.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    }).catch(() => {
+    });
+  }
   function updateQualityVisibility() {
     const isJpg = sourceMimeType === "image/jpeg";
     const forceJpg = forceJpgCheckbox.checked;
@@ -186,6 +232,8 @@
     const img = new Image();
     const objectUrl = URL.createObjectURL(file);
     img.onload = () => {
+      finalizeSession();
+      startSession();
       uploadedImage = img;
       processBtn.disabled = false;
       updateCropPositionOptions();
@@ -374,6 +422,7 @@
   processBtn.addEventListener("click", async () => {
     if (!uploadedImage || isProcessing) return;
     isProcessing = true;
+    if (clickCounts) clickCounts.process++;
     processBtn.disabled = true;
     processedImages = [];
     const total = uploadedFiles.length;
@@ -431,6 +480,7 @@
     }
     isProcessing = false;
     processBtn.disabled = false;
+    sendLog();
   });
   var currentTab = "process";
   function getCurrentOutputData() {
@@ -482,6 +532,8 @@
     return new Blob([arr], { type: mime });
   }
   async function handleDownload() {
+    if (clickCounts) clickCounts.download++;
+    sendLog();
     if (processedImages.length <= 1) {
       const { dataUrl, filename } = getCurrentOutputData();
       const link2 = document.createElement("a");
@@ -541,6 +593,8 @@
   downloadBtn.addEventListener("click", handleDownload);
   var previewWindow = null;
   function updatePreviewWindow() {
+    if (clickCounts) clickCounts.preview++;
+    sendLog();
     if (!previewWindow || previewWindow.closed) {
       previewWindow = window.open("", "imager-preview", "menubar=no,toolbar=no,location=no,status=no");
     }
@@ -1437,6 +1491,12 @@
       }
     });
   }
+  window.addEventListener("pagehide", () => {
+    finalizeSession(true);
+  });
+  window.addEventListener("beforeunload", () => {
+    finalizeSession(true);
+  });
   (function initSettings() {
     const urlSettings = loadFromUrl();
     if (urlSettings) {

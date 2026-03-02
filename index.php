@@ -1,3 +1,5 @@
+
+<?php require_once 'version.php'; ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,8 +7,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sublogical Endeavors Imager</title>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <link rel="stylesheet" href="dist/output.css">
-    <link rel="stylesheet" href="dist/fonts.css">
+    <link rel="stylesheet" href="dist/output.css?v=<?= $version ?>">
+    <link rel="stylesheet" href="dist/fonts.css?v=<?= $version ?>">
     <style>
         body { font-family: 'Courier Prime', monospace; }
         h1, h2, .label-text { font-family: 'Cinzel', serif; }
@@ -497,14 +499,18 @@
                 <div class="rivet"></div>
             </div>
             <p class="text-steam text-xs mt-3 uppercase tracking-wider">
-                <a href="manual.html" class="text-steam hover:text-brass transition-colors">User Manual</a>
+                v. <?= $version ?>
                 <span class="mx-2">&middot;</span>
                 Est. 2026
+                <span class="mx-2">&middot;</span>
+                <a href="manual.php" class="text-steam hover:text-brass transition-colors">User Manual</a>
+                <span class="mx-2">&middot;</span>
+                <a href="log/" class="text-steam hover:text-brass transition-colors">Log</a>
             </p>
         </div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script src="dist/main.js"></script>
+    <script src="dist/main.js?v=<?= $version ?>"></script>
 </body>
 </html>
