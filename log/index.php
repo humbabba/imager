@@ -84,10 +84,10 @@ if (file_exists($dbPath)) {
                             <tr>
                                 <td class="text-left"><?= htmlspecialchars($display) ?></td>
                                 <td><?= (int)$row['image_count'] ?></td>
-                                <td><?= $row['max_width'] ? (int)$row['max_width'] : '&mdash;' ?></td>
-                                <td><?= $row['max_height'] ? (int)$row['max_height'] : '&mdash;' ?></td>
-                                <td><?= htmlspecialchars($row['aspect_ratio'] ?: '&mdash;') ?></td>
-                                <td><?= htmlspecialchars($row['resize_mode']) ?></td>
+                                <td><?= $row['max_width'] ? (int)$row['max_width'] : ' - ' ?></td>
+                                <td><?= $row['max_height'] ? (int)$row['max_height'] : ' - ' ?></td>
+                                <td><?= $row['aspect_ratio'] ?: ' - ' ?></td>
+                                <td><?= $row['resize_mode'] ?></td>
                                 <td><?= (int)$row['text_added'] ?></td>
                                 <td><?= (int)$row['clicks_process'] ?></td>
                                 <td><?= (int)$row['clicks_preview'] ?></td>
