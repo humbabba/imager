@@ -1,12 +1,8 @@
 # Sublogical Endeavors Imager
 
-A privacy-first, browser-based image processing tool. Resize, crop, reformat, and add styled text overlays to your images — all without uploading anything to a server.
+A privacy-first, browser-based image processing tool. Resize, crop, reformat, and add styled text overlays to your images — all without uploading anything to a server. All processing happens locally in your browser using the Canvas API.
 
-## Why Use Imager?
-
-**Your images never leave your machine.** All processing happens locally in your browser using the Canvas API. There's no cloud, no uploads, no waiting — just fast, private image processing.
-
-### What You Can Do
+## What It Can Do
 
 - **Resize & constrain** — Set max width/height and let Imager scale proportionally
 - **Aspect ratio enforcement** — Presets (1:1, 16:9, 9:16, 4:3, etc.) or custom ratios
