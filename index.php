@@ -501,7 +501,7 @@
             <p class="text-steam text-xs mt-3 uppercase tracking-wider">
                 v. <?= $version ?>
                 <span class="mx-2">&middot;</span>
-                Est. 2026
+                Est. 2026 <a href="https://www.sublogicalendeavors.com/" target="_blank">Sublogical Endeavors</a>
                 <span class="mx-2">&middot;</span>
                 <a href="manual.php" class="text-steam hover:text-brass transition-colors">User Manual</a>
                 <span class="mx-2">&middot;</span>

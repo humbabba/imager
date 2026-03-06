@@ -482,7 +482,7 @@
                 <div class="h-px w-16 bg-iron-light"></div>
                 <div class="rivet"></div>
             </div>
-            <p class="text-iron-light text-xs mt-3 uppercase tracking-wider">Est. 2026</p>
+            <p class="text-steam text-xs mt-3 uppercase tracking-wider">Est. 2026 <a href="https://www.sublogicalendeavors.com/" target="_blank">Sublogical Endeavors</a></p>
         </div>
     </div>
 </body>
